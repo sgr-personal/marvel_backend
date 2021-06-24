@@ -508,6 +508,80 @@ if (isset($_GET['table']) && $_GET['table'] == 'users') {
     print_r(json_encode($bulkData));
 }
 
+// data of 'AGENTS' table goes here
+if (isset($_GET['table']) && $_GET['table'] == 'agents') {
+
+    $offset = 0;
+    $limit = 10;
+    $sort = 'id';
+    $order = 'DESC';
+    $where = ' WHERE is_agent = 1 ';
+    if (isset($_GET['offset']))
+        $offset = $db->escapeString($fn->xss_clean($_GET['offset']));
+    if (isset($_GET['limit']))
+        $limit = $db->escapeString($fn->xss_clean($_GET['limit']));
+
+    if (isset($_GET['sort']))
+        $sort = $db->escapeString($fn->xss_clean($_GET['sort']));
+    if (isset($_GET['order']))
+        $order = $db->escapeString($fn->xss_clean($_GET['order']));
+
+    if (isset($_GET['filter_user']) && $_GET['filter_user'] != '') {
+        $filter_user = $db->escapeString($fn->xss_clean($_GET['filter_user']));
+        $where .= ' u.city=' . $filter_user;
+    }
+    if (isset($_GET['search']) && !empty($_GET['search'])) {
+        $search = $db->escapeString($fn->xss_clean($_GET['search']));
+        if (isset($_GET['filter_user']) && $_GET['filter_user'] != '') {
+            $where .= " and `id` like '%" . $search . "%' OR `name` like '%" . $search . "%' OR `email` like '%" . $search . "%' OR `mobile` like '%" . $search . "%' ";
+        } else {
+            $where .= " `id` like '%" . $search . "%' OR `name` like '%" . $search . "%' OR `email` like '%" . $search . "%' OR `mobile` like '%" . $search . "%'";
+        }
+    }
+    if (isset($_GET['filter_order_status']) && $_GET['filter_order_status'] != '') {
+        $filter_order = $db->escapeString($fn->xss_clean($_GET['filter_order']));
+        if (isset($_GET['search']) and $_GET['search'] != '')
+            $where .= ' and active_status=' . $filter_order;
+        else
+            $where = ' active_status=' . $filter_order;
+    }
+
+    $sql = "SELECT COUNT(id) as total FROM `users` u " . $where;
+    $db->sql($sql);
+    $res = $db->getResult();
+    foreach ($res as $row)
+        $total = $row['total'];
+
+    $sql = "SELECT *,(SELECT name FROM area a WHERE a.id=u.area) as area_name,(SELECT name FROM city c WHERE c.id=u.city) as city_name FROM `users` u " . $where . " ORDER BY `" . $sort . "` " . $order . " LIMIT " . $offset . ", " . $limit;
+    $db->sql($sql);
+    $res = $db->getResult();
+    $bulkData = array();
+    $bulkData['total'] = $total;
+    $rows = array();
+    $tempRow = array();
+
+    foreach ($res as $row) {
+        $operate = ' <a href="edit-agent.php?id=' . $row['id'] . '"><i class="fa fa-edit"></i>Edit</a>';
+        $operate .= ' <a class="btn-xs btn-danger" href="delete-agent.php?id=' . $row['id'] . '"><i class="fa fa-trash-o"></i>Delete</a>';
+
+        $tempRow['id'] = $row['id'];
+        $tempRow['name'] = $row['name'];
+        if (ALLOW_MODIFICATION == 0 && !defined(ALLOW_MODIFICATION)) {
+            $tempRow['email'] = str_repeat("*", strlen($row['email']) - 13) . substr($row['email'], -13);
+            $tempRow['mobile'] = str_repeat("*", strlen($row['mobile']) - 3) . substr($row['mobile'], -3);
+        } else {
+            $tempRow['mobile'] = $row['mobile'];
+            $tempRow['email'] = $row['email'];
+        }
+        $tempRow['commission'] = $row['commission'];
+        $tempRow['status'] = $row['status'] == 1 ? "<label class='label label-success'>Active</label>" : "<label class='label label-danger'>De-Active</label>";
+        $tempRow['operate'] = $operate;
+        $rows[] = $tempRow;
+    }
+    $bulkData['rows'] = $rows;
+    print_r(json_encode($bulkData));
+}
+
 // data of 'USERS' table goes here
 if (isset($_GET['table']) && $_GET['table'] == 'area') {
     $where = '';

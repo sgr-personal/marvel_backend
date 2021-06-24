@@ -70,7 +70,7 @@ $res_logo = $db->getResult();
     <link rel="stylesheet" href="dist/css/skins/_all-skins.min.css">
     <!-- iCheck -->
     <link rel="stylesheet" href="plugins/iCheck/flat/blue.css">
-    <!-- Morris chart 
+    <!-- Morris chart
 		<script src="//code.jquery.com/jquery-1.10.2.js"></script>-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
@@ -304,6 +304,11 @@ $res_logo = $db->getResult();
                         </a>
                     </li>
                     <li class="treeview">
+                        <a href="agents.php">
+                            <i class="fa fa-users"></i> <span>Agents</span>
+                        </a>
+                    </li>
+                    <li class="treeview">
                         <a href="#">
                             <i class="fa fa-male"></i>
                             <span>Customers</span>
@@ -317,6 +322,7 @@ $res_logo = $db->getResult();
 
                         </ul>
                     </li>
+
                     <!-- <li class="treeview">
                         <a href="payment-requests.php">
                             <i class="fa fa-money"></i> <span>Payment Requests</span>
