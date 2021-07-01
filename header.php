@@ -304,6 +304,11 @@ $res_logo = $db->getResult();
                         </a>
                     </li>
                     <li class="treeview">
+                        <a href="profession.php">
+                            <i class="fa fa-briefcase"></i> <span>Profession</span>
+                        </a>
+                    </li>
+                    <li class="treeview">
                         <a href="agents.php">
                             <i class="fa fa-users"></i> <span>Agents</span>
                         </a>

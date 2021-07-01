@@ -28,6 +28,10 @@ foreach ($res as $row) {
     $previous_menu_image = $row['image'];
     $other_images = $row['other_images'];
 }
+
+$db->sql("SELECT id, name FROM profession ORDER BY id ASC");
+$professions = $db->getResult();
+
 if (isset($_POST['btnEdit'])) {
     if (ALLOW_MODIFICATION == 0 && !defined(ALLOW_MODIFICATION)) {
         echo '<label class="alert alert-danger">This operation is not allowed in demo panel!.</label>';
@@ -53,7 +57,7 @@ if (isset($_POST['btnEdit'])) {
                 $i++;
             }
         }
-
+        $profession_id = implode(",", $_POST['profession_id']);
         $subcategory_id = (isset($_POST['subcategory_id']) && $_POST['subcategory_id'] != '') ? $db->escapeString($fn->xss_clean($_POST['subcategory_id'])) : 0;
         $category_id = $db->escapeString($fn->xss_clean($_POST['category_id']));
         $serve_for = $db->escapeString($fn->xss_clean($_POST['serve_for']));
@@ -156,12 +160,13 @@ if (isset($_POST['btnEdit'])) {
                 $upload = move_uploaded_file($_FILES['image']['tmp_name'], 'upload/images/' . $image);
 
                 $upload_image = 'upload/images/' . $image;
-                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' , subcategory_id = '$subcategory_id', image = '$upload_image', description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status',`status` = $pr_status WHERE id = $ID";
+                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' , subcategory_id = '$subcategory_id', profession_id = '$profession_id', image = '$upload_image', description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status',`status` = $pr_status WHERE id = $ID";
                 $db->sql($sql_query);
             } else {
-                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' ,category_id = '$category_id' ,subcategory_id = '$subcategory_id' ,description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status' ,`status` = $pr_status WHERE id = $ID";
+                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' ,category_id = '$category_id' ,subcategory_id = '$subcategory_id' , profession_id = '$profession_id', description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status' ,`status` = $pr_status WHERE id = $ID";
                 $db->sql($sql_query);
             }
+
             // echo $sql_query;
             $res = $db->getResult();
             $product_variant_id = $db->escapeString($fn->xss_clean($_POST['product_variant_id']));
@@ -676,6 +681,24 @@ function isJSON($string)
                                             <?php } ?>
                                         </select>
                                     </div>
+
+                                    <div class="form-group">
+                                        <label for="profession_id">Profession :</label> <i class="text-danger asterik">*</i>
+                                        <select class="form-control select2" data-toggle="select2"
+                                                name="profession_id[]" id="profession_id" required multiple>
+                                            <?php foreach ($professions as $row):
+                                                $selected = "";
+                                                if (in_array($row['id'], explode(",", $data['profession_id'])) && $data['profession_id'] != ""):
+                                                    $selected = "selected";
+                                                endif;
+                                                ?>
+                                                    <option value="<?php echo $row['id']; ?>" <?= $selected; ?> >
+                                                        <?php echo $row['name']; ?>
+                                                    </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+
                                     <div class="form-group">
                                         <label for="">Product Type :</label>
                                         <select name="indicator" id="indicator" class="form-control">
@@ -776,6 +799,9 @@ function isJSON($string)
 </section>
 <div class="separator"> </div>
 <script>
+    $(document).ready(function () {
+        $("#profession_id").select2();
+    });
     $(document).on('click', '.delete-image', function() {
         var pid = $(this).data('pid');
         var i = $(this).data('i');
@@ -915,7 +941,7 @@ function isJSON($string)
     });
 </script>
 <script>
- 
+
     $(document).on('click', '.remove_variation', function() {
         if ($(this).data('id') == 'data_delete') {
             if (confirm('Are you sure? Want to delete this row')) {

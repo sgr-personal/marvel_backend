@@ -13,6 +13,10 @@ $sql_query = "SELECT value FROM settings WHERE variable = 'Currency'";
 $db->sql($sql_query);
 
 $res_cur = $db->getResult();
+
+$db->sql("SELECT id, name FROM profession ORDER BY id ASC");
+$professions = $db->getResult();
+
 if (isset($_POST['btnAdd'])) {
     if (ALLOW_MODIFICATION == 0 && !defined(ALLOW_MODIFICATION)) {
         echo '<label class="alert alert-danger">This operation is not allowed in demo panel!.</label>';
@@ -20,6 +24,7 @@ if (isset($_POST['btnAdd'])) {
     }
     if ($permissions['products']['create'] == 1) {
         $name = $db->escapeString($fn->xss_clean($_POST['name']));
+        $profession_id = implode(",", $_POST['profession_id']);
         $tax_id = (isset($_POST['tax_id']) && $_POST['tax_id'] != '') ? $db->escapeString($fn->xss_clean($_POST['tax_id'])) : 0;
         $slug = $function->slugify($db->escapeString($fn->xss_clean($_POST['name'])));
         $category_id = $db->escapeString($fn->xss_clean($_POST['category_id']));
@@ -118,9 +123,9 @@ if (isset($_POST['btnAdd'])) {
             }
 
             $upload_image = 'upload/images/' . $image;
-           
+
             // insert new data to product table
-            $sql = "INSERT INTO products (name,tax_id,slug,category_id,subcategory_id,image,other_images,description,indicator,manufacturer,made_in,return_status,cancelable_status, till_status) VALUES('$name','$tax_id','$slug','$category_id','$subcategory_id','$upload_image','$other_images','$description','$indicator','$manufacturer','$made_in','$return_status','$cancelable_status','$till_status')";
+            $sql = "INSERT INTO products (name,tax_id,slug,category_id,subcategory_id,profession_id,image,other_images,description,indicator,manufacturer,made_in,return_status,cancelable_status, till_status) VALUES('$name','$tax_id','$slug','$category_id','$subcategory_id','$profession_id','$upload_image','$other_images','$description','$indicator','$manufacturer','$made_in','$return_status','$cancelable_status','$till_status')";
             // echo $sql;
             $db->sql($sql);
             $product_result = $db->getResult();
@@ -141,7 +146,7 @@ if (isset($_POST['btnAdd'])) {
                         $type = $db->escapeString($fn->xss_clean($_POST['type']));
                         $measurement = $db->escapeString($fn->xss_clean($_POST['packate_measurement'][$i]));
                         $measurement_unit_id = $db->escapeString($fn->xss_clean($_POST['packate_measurement_unit_id'][$i]));
-                       
+
                         $price = $db->escapeString($fn->xss_clean($_POST['packate_price'][$i]));
                         $discounted_price = !empty($_POST['packate_discounted_price'][$i]) ? $db->escapeString($fn->xss_clean($_POST['packate_discounted_price'][$i])) : 0;
                         $serve_for = $db->escapeString($fn->xss_clean($_POST['packate_serve_for'][$i]));
@@ -410,6 +415,16 @@ if (isset($_POST['btnAdd'])) {
                             </select>
                         </div>
                         <div class="form-group">
+                            <label for="profession">Profession :</label> <i class="text-danger asterik">*</i>
+                            <select class="form-control select2" data-toggle="select2"
+                                    name="profession_id[]" id="profession_id" required multiple>
+                                <?php foreach ($professions as $row): ?>
+                                    <option value="<?= $row['id']; ?>"><?= $row['name']; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <br />
+                        </div>
+                        <div class="form-group">
                             <label for="">Manufacturer :</label>
                             <input type="text" name="manufacturer" class="form-control">
                         </div>
@@ -603,6 +618,9 @@ if (isset($_POST['btnAdd'])) {
     });
 </script>
 <script>
+    $(document).ready(function () {
+        $("#profession_id").select2();
+    });
     $(document).on('click', '.remove_variation', function() {
         $(this).closest('.row').remove();
     });
