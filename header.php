@@ -316,6 +316,19 @@ $res_logo = $db->getResult();
                     <li class="treeview">
                         <a href="#">
                             <i class="fa fa-male"></i>
+                            <span>Custom Product</span>
+                            <i class="fa fa-angle-right pull-right"></i>
+                        </a>
+                        <ul class="treeview-menu">
+                            <li>
+                                <a href="custom_product_category.php"><i class="fa fa-users"></i> Category </a>
+                            </li>
+                            <li><a href="custom_product.php"><i class="fa fa-exchange"></i>Products</a></li>
+                        </ul>
+                    </li>
+                    <li class="treeview">
+                        <a href="#">
+                            <i class="fa fa-male"></i>
                             <span>Customers</span>
                             <i class="fa fa-angle-right pull-right"></i>
                         </a>
