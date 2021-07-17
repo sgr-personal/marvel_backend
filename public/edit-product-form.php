@@ -138,7 +138,7 @@ if (isset($_POST['btnEdit'])) {
                 $db->sql($sql);
             }
         }
-        if (!empty($name) && !empty($category_id) &&  !empty($serve_for) && !empty($description) && empty($error['cancelable']) && empty($error)) {
+        if (!empty($name) && !empty($category_id) && !empty($serve_for) && !empty($description) && empty($error['cancelable']) && empty($error)) {
             if (strpos($name, "'") !== false) {
                 $name = str_replace("'", "''", "$name");
                 if (strpos($description, "'") !== false)
@@ -165,15 +165,15 @@ if (isset($_POST['btnEdit'])) {
             // echo $sql_query;
             $res = $db->getResult();
             $product_variant_id = $db->escapeString($fn->xss_clean($_POST['product_variant_id']));
-            if(isset($_POST['loose_measurement']) && isset($_POST['packate_measurement']) && $_POST['loose_measurement'] != 0 && $_POST['packate_measurement'] != 0 && $_POST['packate_measurement'] < $_POST['loose_measurement']){
+            if (isset($_POST['loose_measurement']) && isset($_POST['packate_measurement']) && $_POST['loose_measurement'] != 0 && $_POST['packate_measurement'] != 0 && $_POST['packate_measurement'] < $_POST['loose_measurement']) {
                 $count = count($_POST['loose_measurement']);
-            }else{
+            } else {
                 $count = count($_POST['packate_measurement']);
             }
             for ($i = 0; $i < $count; $i++) {
                 if ($_POST['type'] == "packet") {
                     $stock = $db->escapeString($fn->xss_clean($_POST['packate_stock'][$i]));
-                    $serve_for = ($stock == 0 || $stock <= 0)?'Sold Out':$db->escapeString($fn->xss_clean($_POST['packate_serve_for'][$i]));
+                    $serve_for = ($stock == 0 || $stock <= 0) ? 'Sold Out' : $db->escapeString($fn->xss_clean($_POST['packate_serve_for'][$i]));
                     $data = array(
                         'type' => $db->escapeString($fn->xss_clean($_POST['type'])),
                         'measurement' => $db->escapeString($fn->xss_clean($_POST['packate_measurement'][$i])),
@@ -189,7 +189,7 @@ if (isset($_POST['btnEdit'])) {
                     $res = $db->getResult();
                 } else if ($_POST['type'] == "loose") {
                     $stock = $db->escapeString($fn->xss_clean($_POST['loose_stock']));
-                    $serve_for = ($stock == 0 || $stock <= 0)?'Sold Out' : $db->escapeString($fn->xss_clean($_POST['serve_for']));
+                    $serve_for = ($stock == 0 || $stock <= 0) ? 'Sold Out' : $db->escapeString($fn->xss_clean($_POST['serve_for']));
                     $data = array(
                         'type' => $db->escapeString($fn->xss_clean($_POST['type'])),
                         'measurement' => $db->escapeString($fn->xss_clean($_POST['loose_measurement'][$i])),
@@ -212,7 +212,7 @@ if (isset($_POST['btnEdit'])) {
                 $insert_packate_measurement = $db->escapeString($fn->xss_clean($_POST['insert_packate_measurement']));
                 for ($i = 0; $i < count($insert_packate_measurement); $i++) {
                     $stock = $db->escapeString($fn->xss_clean($_POST['insert_packate_stock'][$i]));
-                    $serve_for = ($stock == 0 || $stock <= 0)?'Sold Out':$db->escapeString($fn->xss_clean($_POST['insert_packate_serve_for'][$i]));
+                    $serve_for = ($stock == 0 || $stock <= 0) ? 'Sold Out' : $db->escapeString($fn->xss_clean($_POST['insert_packate_serve_for'][$i]));
                     $data = array(
                         "product_id" => $db->escapeString($ID),
                         "type" => $db->escapeString($fn->xss_clean($_POST['type'])),
@@ -268,9 +268,11 @@ function isJSON($string)
 {
     return is_string($string) && is_array(json_decode($string, true)) && (json_last_error() == JSON_ERROR_NONE) ? true : false;
 }
+
 ?>
 <section class="content-header">
-    <h1>Edit Product <small><a href='products.php'> <i class='fa fa-angle-double-left'></i>&nbsp;&nbsp;&nbsp;Back to Products</a></small></h1>
+    <h1>Edit Product <small><a href='products.php'> <i class='fa fa-angle-double-left'></i>&nbsp;&nbsp;&nbsp;Back to
+                Products</a></small></h1>
     <small><?php echo isset($error['update_data']) ? $error['update_data'] : ''; ?></small>
     <ol class="breadcrumb">
         <li><a href="home.php"><i class="fa fa-home"></i> Home</a></li>
@@ -300,8 +302,10 @@ function isJSON($string)
                     <div class="box-body">
                         <div class="form-group">
                             <div class='col-md-6'>
-                                <label for="exampleInputEmail1">Product Name</label> <i class="text-danger asterik">*</i> <?php echo isset($error['name']) ? $error['name'] : ''; ?>
-                                <input type="text" name="name" class="form-control" value="<?php echo $data['name']; ?>" />
+                                <label for="exampleInputEmail1">Product Name</label> <i
+                                        class="text-danger asterik">*</i> <?php echo isset($error['name']) ? $error['name'] : ''; ?>
+                                <input type="text" name="name" class="form-control"
+                                       value="<?php echo $data['name']; ?>"/>
                             </div>
                             <?php $db->sql("SET NAMES 'utf8'");
                             $sql = "SELECT * FROM `taxes` ORDER BY id DESC";
@@ -318,11 +322,13 @@ function isJSON($string)
                                 </select><br>
                             </div>
                         </div>
-                        <label for="type">Type</label><?php echo isset($error['type']) ? $error['type'] : ''; ?>
+                        <!--<label for="type">Type</label><?php /*echo isset($error['type']) ? $error['type'] : ''; */?>
                         <div class="form-group">
-                            <label class="radio-inline"><input type="radio" name="type" id="packate" value="packet" <?= ($res[0]['type'] == "packet") ? "checked" : ""; ?>>Packet</label>
-                            <label class="radio-inline"><input type="radio" name="type" id="loose" value="loose" <?= ($res[0]['type'] == "loose") ? "checked" : ""; ?>>Loose</label>
-                        </div>
+                            <label class="radio-inline"><input type="radio" name="type" id="packate"
+                                                               value="packet" <?/*= ($res[0]['type'] == "packet") ? "checked" : ""; */?>>Packet</label>
+                            <label class="radio-inline"><input type="radio" name="type" id="loose"
+                                                               value="loose" <?/*= ($res[0]['type'] == "loose") ? "checked" : ""; */?>>Loose</label>
+                        </div>-->
                         <hr>
                         <div id="variations">
                             <h5>Product Variations</h5>
@@ -340,12 +346,16 @@ function isJSON($string)
                             $i = 0;
                             if ($res[0]['type'] == "packet") {
                                 foreach ($res as $row) {
-                            ?>
+                                    ?>
                                     <div class="row packate_div">
-                                        <input type="hidden" class="form-control" name="product_variant_id[]" id="product_variant_id" value='<?= $row['product_variant_id']; ?>' />
+                                        <input type="hidden" class="form-control" name="product_variant_id[]"
+                                               id="product_variant_id" value='<?= $row['product_variant_id']; ?>'/>
                                         <div class="col-md-2">
                                             <div class="form-group packate_div">
-                                                <label for="exampleInputEmail1">Measurement</label> <i class="text-danger asterik">*</i> <input type="number" step="any" min="0" class="form-control" name="packate_measurement[]" value='<?= $row['measurement']; ?>' required />
+                                                <label for="exampleInputEmail1">Variant</label> <i
+                                                        class="text-danger asterik">*</i>
+                                                <input type="text" class="form-control" name="packate_measurement[]"
+                                                       value='<?= $row['measurement']; ?>' required/>
                                             </div>
                                         </div>
                                         <div class="col-md-1">
@@ -353,7 +363,7 @@ function isJSON($string)
                                                 <label for="unit">Unit:</label>
                                                 <select class="form-control" name="packate_measurement_unit_id[]">
                                                     <?php
-                                                    foreach ($unit_data as  $unit) {
+                                                    foreach ($unit_data as $unit) {
                                                         echo "<option";
                                                         if ($unit['id'] == $row['measurement_unit_id']) {
                                                             echo " selected ";
@@ -366,19 +376,30 @@ function isJSON($string)
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group packate_div">
-                                                <label for="price">Price (<?= $settings['currency'] ?>):</label> <i class="text-danger asterik">*</i> <input type="number" step="any" min="0" class="form-control" name="packate_price[]" id="packate_price" value='<?= $row['price']; ?>' required />
+                                                <label for="price">Price (<?= $settings['currency'] ?>):</label> <i
+                                                        class="text-danger asterik">*</i> <input type="number"
+                                                                                                 step="any" min="0"
+                                                                                                 class="form-control"
+                                                                                                 name="packate_price[]"
+                                                                                                 id="packate_price"
+                                                                                                 value='<?= $row['price']; ?>'
+                                                                                                 required/>
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group packate_div">
-                                                <label for="discounted_price">Discounted Price(<?= $settings['currency'] ?>):</label>
-                                                <input type="number" step="any" min="0" class="form-control" name="packate_discounted_price[]" id="discounted_price" value='<?= $row['discounted_price']; ?>' />
+                                                <label for="discounted_price">Discounted
+                                                    Price(<?= $settings['currency'] ?>):</label>
+                                                <input type="number" step="any" min="0" class="form-control"
+                                                       name="packate_discounted_price[]" id="discounted_price"
+                                                       value='<?= $row['discounted_price']; ?>'/>
                                             </div>
                                         </div>
                                         <div class="col-md-1">
                                             <div class="form-group packate_div">
                                                 <label for="qty">Stock:</label> <i class="text-danger asterik">*</i>
-                                                <input type="number" step="any" min="0" class="form-control" name="packate_stock[]" required value='<?= $row['stock']; ?>' />
+                                                <input type="number" step="any" min="0" class="form-control"
+                                                       name="packate_stock[]" required value='<?= $row['stock']; ?>'/>
                                             </div>
                                         </div>
                                         <div class="col-md-1">
@@ -386,7 +407,7 @@ function isJSON($string)
                                                 <label for="unit">Unit:</label>
                                                 <select class="form-control" name="packate_stock_unit_id[]">
                                                     <?php
-                                                    foreach ($unit_data as  $unit) {
+                                                    foreach ($unit_data as $unit) {
                                                         echo "<option";
                                                         if ($unit['id'] == $row['stock_unit_id']) {
                                                             echo " selected ";
@@ -403,27 +424,33 @@ function isJSON($string)
                                                 <label for="qty">Status:</label>
                                                 <select name="packate_serve_for[]" class="form-control">
                                                     <option value="Available" <?php if (strtolower($row['serve_for']) == "availabel") {
-                                                                                    echo "selected";
-                                                                                } ?>>Available</option>
+                                                        echo "selected";
+                                                    } ?>>Available
+                                                    </option>
                                                     <option value="Sold Out" <?php if (strtolower($row['serve_for']) == "sold out") {
-                                                                                    echo "selected";
-                                                                                } ?>>Sold Out</option>
+                                                        echo "selected";
+                                                    } ?>>Sold Out
+                                                    </option>
                                                 </select>
                                             </div>
                                         </div>
                                         <?php if ($i == 0) { ?>
                                             <div class='col-md-1'>
                                                 <label>Variation</label>
-                                                <a id='add_packate_variation' title='Add variation of product' style='cursor: pointer;'><i class="fa fa-plus-square-o fa-2x"></i></a>
+                                                <a id='add_packate_variation' title='Add variation of product'
+                                                   style='cursor: pointer;'><i
+                                                            class="fa fa-plus-square-o fa-2x"></i></a>
                                             </div>
                                         <?php } else { ?>
                                             <div class="col-md-1" style="display: grid;">
                                                 <label>Remove</label>
-                                                <a class="remove_variation text-danger" data-id="data_delete" title="Remove variation of product" style="cursor: pointer;"><i class="fa fa-times fa-2x"></i></a>
+                                                <a class="remove_variation text-danger" data-id="data_delete"
+                                                   title="Remove variation of product" style="cursor: pointer;"><i
+                                                            class="fa fa-times fa-2x"></i></a>
                                             </div>
                                         <?php } ?>
                                     </div>
-                                <?php $i++;
+                                    <?php $i++;
                                 }
                             } else {
                                 $db->select('unit', '*');
@@ -433,7 +460,10 @@ function isJSON($string)
                                     <div class="row">
                                         <div class="col-md-2">
                                             <div class="form-group packate_div">
-                                                <label for="exampleInputEmail1">Measurement</label> <i class="text-danger asterik">*</i> <input type="number" step="any" min="0" class="form-control" name="packate_measurement[]" required />
+                                                <label for="exampleInputEmail1">Variant</label> <i
+                                                        class="text-danger asterik">*</i>
+                                                <input type="text" class="form-control" name="packate_measurement[]"
+                                                       required/>
                                             </div>
                                         </div>
                                         <div class="col-md-1">
@@ -441,7 +471,7 @@ function isJSON($string)
                                                 <label for="unit">Unit:</label>
                                                 <select class="form-control" name="packate_measurement_unit_id[]">
                                                     <?php
-                                                    foreach ($resedit as  $row) {
+                                                    foreach ($resedit as $row) {
                                                         echo "<option value='" . $row['id'] . "'>" . $row['short_code'] . "</option>";
                                                     }
                                                     ?>
@@ -450,19 +480,27 @@ function isJSON($string)
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group packate_div">
-                                                <label for="price">Price (INR):</label> <i class="text-danger asterik">*</i> <input type="number" step="any" min="0" class="form-control" name="packate_price[]" id="packate_price" required />
+                                                <label for="price">Price (INR):</label> <i
+                                                        class="text-danger asterik">*</i> <input type="number"
+                                                                                                 step="any" min="0"
+                                                                                                 class="form-control"
+                                                                                                 name="packate_price[]"
+                                                                                                 id="packate_price"
+                                                                                                 required/>
                                             </div>
                                         </div>
                                         <div class="col-md-1">
                                             <div class="form-group packate_div">
                                                 <label for="discounted_price">Discount:</label>
-                                                <input type="number" step="any" min="0" class="form-control" name="packate_discounted_price[]" id="discounted_price" />
+                                                <input type="number" step="any" min="0" class="form-control"
+                                                       name="packate_discounted_price[]" id="discounted_price"/>
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group packate_div">
                                                 <label for="qty">Stock:</label> <i class="text-danger asterik">*</i>
-                                                <input type="number" step="any" min="0" class="form-control" name="packate_stock[]" />
+                                                <input type="number" step="any" min="0" class="form-control"
+                                                       name="packate_stock[]"/>
                                             </div>
                                         </div>
                                         <div class="col-md-1">
@@ -470,7 +508,7 @@ function isJSON($string)
                                                 <label for="unit">Unit:</label>
                                                 <select class="form-control" name="packate_stock_unit_id[]">
                                                     <?php
-                                                    foreach ($resedit as  $row) {
+                                                    foreach ($resedit as $row) {
                                                         echo "<option value='" . $row['id'] . "'>" . $row['short_code'] . "</option>";
                                                     }
                                                     ?>
@@ -488,7 +526,8 @@ function isJSON($string)
                                         </div>
                                         <div class="col-md-1">
                                             <label>Variation</label>
-                                            <a id="add_packate_variation" title="Add variation of product" style="cursor: pointer;"><i class="fa fa-plus-square-o fa-2x"></i></a>
+                                            <a id="add_packate_variation" title="Add variation of product"
+                                               style="cursor: pointer;"><i class="fa fa-plus-square-o fa-2x"></i></a>
                                         </div>
                                     </div>
                                 </div>
@@ -498,13 +537,17 @@ function isJSON($string)
                             $i = 0;
                             if ($res[0]['type'] == "loose") {
                                 foreach ($res as $row) {
-                            ?>
+                                    ?>
                                     <div class="row loose_div">
-                                        <input type="hidden" class="form-control" name="product_variant_id[]" id="product_variant_id" value='<?= $row['product_variant_id']; ?>' />
+                                        <input type="hidden" class="form-control" name="product_variant_id[]"
+                                               id="product_variant_id" value='<?= $row['product_variant_id']; ?>'/>
                                         <div class="col-md-4">
                                             <div class="form-group loose_div">
-                                                <label for="exampleInputEmail1">Measurement</label> <i class="text-danger asterik">*</i>
-                                                <input type="number" step="any" min="0" class="form-control" name="loose_measurement[]" required="" value='<?= $row['measurement']; ?>'>
+                                                <label for="exampleInputEmail1">Varirant</label> <i
+                                                        class="text-danger asterik">*</i>
+                                                <input type="number" step="any" min="0" class="form-control"
+                                                       name="loose_measurement[]" required=""
+                                                       value='<?= $row['measurement']; ?>'>
                                             </div>
                                         </div>
                                         <div class="col-md-2">
@@ -512,7 +555,7 @@ function isJSON($string)
                                                 <label for="unit">Unit:</label>
                                                 <select class="form-control" name="loose_measurement_unit_id[]">
                                                     <?php
-                                                    foreach ($unit_data as  $unit) {
+                                                    foreach ($unit_data as $unit) {
                                                         echo "<option";
                                                         if ($unit['id'] == $row['measurement_unit_id']) {
                                                             echo " selected ";
@@ -525,25 +568,35 @@ function isJSON($string)
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group loose_div">
-                                                <label for="price">Price (<?= $settings['currency'] ?>):</label> <i class="text-danger asterik">*</i>
-                                                <input type="number" step="any"  min="0" class="form-control" name="loose_price[]" id="loose_price" required="" value='<?= $row['price']; ?>'>
+                                                <label for="price">Price (<?= $settings['currency'] ?>):</label> <i
+                                                        class="text-danger asterik">*</i>
+                                                <input type="number" step="any" min="0" class="form-control"
+                                                       name="loose_price[]" id="loose_price" required=""
+                                                       value='<?= $row['price']; ?>'>
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group loose_div">
-                                                <label for="discounted_price">Discounted Price(<?= $settings['currency'] ?>):</label>
-                                                <input type="number" step="any" min="0" class="form-control" name="loose_discounted_price[]" id="discounted_price" value='<?= $row['discounted_price']; ?>' />
+                                                <label for="discounted_price">Discounted
+                                                    Price(<?= $settings['currency'] ?>):</label>
+                                                <input type="number" step="any" min="0" class="form-control"
+                                                       name="loose_discounted_price[]" id="discounted_price"
+                                                       value='<?= $row['discounted_price']; ?>'/>
                                             </div>
                                         </div>
                                         <?php if ($i == 0) { ?>
                                             <div class='col-md-1'>
                                                 <label>Variation</label>
-                                                <a id='add_loose_variation' title='Add variation of product' style='cursor: pointer;'><i class="fa fa-plus-square-o fa-2x"></i></a>
+                                                <a id='add_loose_variation' title='Add variation of product'
+                                                   style='cursor: pointer;'><i
+                                                            class="fa fa-plus-square-o fa-2x"></i></a>
                                             </div>
                                         <?php } else { ?>
                                             <div class="col-md-1" style="display: grid;">
                                                 <label>Remove</label>
-                                                <a class="remove_variation text-danger" data-id="data_delete" title="Remove variation of product" style="cursor: pointer;"><i class="fa fa-times fa-2x"></i></a>
+                                                <a class="remove_variation text-danger" data-id="data_delete"
+                                                   title="Remove variation of product" style="cursor: pointer;"><i
+                                                            class="fa fa-times fa-2x"></i></a>
                                             </div>
                                         <?php }
                                         $i++; ?>
@@ -553,14 +606,17 @@ function isJSON($string)
 
                                 <hr>
                                 <div class="form-group" id="loose_stock_div" style="display:block;">
-                                    <label for="quantity">Stock :</label> <i class="text-danger asterik">*</i> <?php echo isset($error['quantity']) ? $error['quantity'] : ''; ?>
-                                    <input type="number" step="any" min="0" class="form-control" name="loose_stock" required value='<?= $row['stock']; ?>'>
+                                    <label for="quantity">Stock :</label> <i
+                                            class="text-danger asterik">*</i> <?php echo isset($error['quantity']) ? $error['quantity'] : ''; ?>
+                                    <input type="number" step="any" min="0" class="form-control" name="loose_stock"
+                                           required value='<?= $row['stock']; ?>'>
                                 </div>
                                 <div class="form-group">
-                                    <label for="stock_unit">Unit :</label><?php echo isset($error['stock_unit']) ? $error['stock_unit'] : ''; ?>
+                                    <label for="stock_unit">Unit
+                                        :</label><?php echo isset($error['stock_unit']) ? $error['stock_unit'] : ''; ?>
                                     <select class="form-control" name="loose_stock_unit_id" id="loose_stock_unit_id">
                                         <?php
-                                        foreach ($unit_data as  $unit) {
+                                        foreach ($unit_data as $unit) {
                                             echo "<option";
                                             if ($unit['id'] == $row['stock_unit_id']) {
                                                 echo " selected ";
@@ -573,13 +629,15 @@ function isJSON($string)
                             <?php } else {
                                 $db->select('unit', '*');
                                 $resedit = $db->getResult();
-                            ?>
+                                ?>
                                 <div id="loose_div" style="display:none;">
                                     <div class="row">
                                         <div class="col-md-4">
                                             <div class="form-group loose_div">
-                                                <label for="exampleInputEmail1">Measurement</label> <i class="text-danger asterik">*</i>
-                                                <input type="number" step="any" min="0"  class="form-control" name="loose_measurement[]" required="">
+                                                <label for="exampleInputEmail1">Variant</label> <i
+                                                        class="text-danger asterik">*</i>
+                                                <input type="text" class="form-control"
+                                                       name="loose_measurement[]" required="">
                                             </div>
                                         </div>
                                         <div class="col-md-2">
@@ -587,7 +645,7 @@ function isJSON($string)
                                                 <label for="unit">Unit:</label>
                                                 <select class="form-control" name="loose_measurement_unit_id[]">
                                                     <?php
-                                                    foreach ($resedit as  $row) {
+                                                    foreach ($resedit as $row) {
                                                         echo "<option value='" . $row['id'] . "'>" . $row['short_code'] . "</option>";
                                                     }
                                                     ?>
@@ -596,19 +654,23 @@ function isJSON($string)
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group loose_div">
-                                                <label for="price">Price (INR):</label> <i class="text-danger asterik">*</i>
-                                                <input type="number" step="any" min="0" class="form-control" name="loose_price[]" id="loose_price" required="">
+                                                <label for="price">Price (INR):</label> <i
+                                                        class="text-danger asterik">*</i>
+                                                <input type="number" step="any" min="0" class="form-control"
+                                                       name="loose_price[]" id="loose_price" required="">
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group loose_div">
                                                 <label for="discounted_price">Discounted Price:</label>
-                                                <input type="number" step="any" min="0" class="form-control" name="loose_discounted_price[]" id="discounted_price" />
+                                                <input type="number" step="any" min="0" class="form-control"
+                                                       name="loose_discounted_price[]" id="discounted_price"/>
                                             </div>
                                         </div>
                                         <div class="col-md-1">
                                             <label>Variation</label>
-                                            <a id="add_loose_variation" title="Add variation of product" style="cursor: pointer;"><i class="fa fa-plus-square-o fa-2x"></i></a>
+                                            <a id="add_loose_variation" title="Add variation of product"
+                                               style="cursor: pointer;"><i class="fa fa-plus-square-o fa-2x"></i></a>
                                         </div>
                                     </div>
                                 </div>
@@ -616,10 +678,13 @@ function isJSON($string)
                                 </div>
                                 <hr>
                                 <div class="form-group" id="loose_stock_div" style="display:none;">
-                                    <label for="quantity">Stock :</label> <i class="text-danger asterik">*</i> <?php echo isset($error['quantity']) ? $error['quantity'] : ''; ?>
-                                    <input type="number" step="any" min="0" class="form-control" name="loose_stock" required>
+                                    <label for="quantity">Stock :</label> <i
+                                            class="text-danger asterik">*</i> <?php echo isset($error['quantity']) ? $error['quantity'] : ''; ?>
+                                    <input type="number" step="any" min="0" class="form-control" name="loose_stock"
+                                           required>
 
-                                    <label for="stock_unit">Unit :</label><?php echo isset($error['stock_unit']) ? $error['stock_unit'] : ''; ?>
+                                    <label for="stock_unit">Unit
+                                        :</label><?php echo isset($error['stock_unit']) ? $error['stock_unit'] : ''; ?>
                                     <select class="form-control" name="loose_stock_unit_id" id="loose_stock_unit_id">
                                         <?php
                                         foreach ($resedit as $row) {
@@ -633,21 +698,25 @@ function isJSON($string)
 
                             <div class="form-group">
                                 <div class="form-group" id="status_div" <?php if ($res[0]['type'] == "packet") {
-                                                                            echo "style='display:none'";
-                                                                        } ?>>
-                                    <label for="exampleInputEmail1">Status :</label><?php echo isset($error['serve_for']) ? $error['serve_for'] : ''; ?>
+                                    echo "style='display:none'";
+                                } ?>>
+                                    <label for="exampleInputEmail1">Status
+                                        :</label><?php echo isset($error['serve_for']) ? $error['serve_for'] : ''; ?>
                                     <select name="serve_for" class="form-control">
                                         <option value="Available" <?php if (strtolower($res[0]['serve_for']) == "available") {
-                                                                        echo "selected";
-                                                                    } ?>>Available</option>
+                                            echo "selected";
+                                        } ?>>Available
+                                        </option>
                                         <option value="Sold Out" <?php if (strtolower($res[0]['serve_for']) == "sold out") {
-                                                                        echo "selected";
-                                                                    } ?>>Sold Out</option>
+                                            echo "selected";
+                                        } ?>>Sold Out
+                                        </option>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <div class="form-group">
-                                        <label for="exampleInputEmail1">Category :</label> <i class="text-danger asterik">*</i> <?php echo isset($error['category_id']) ? $error['category_id'] : ''; ?>
+                                        <label for="exampleInputEmail1">Category :</label> <i
+                                                class="text-danger asterik">*</i> <?php echo isset($error['category_id']) ? $error['category_id'] : ''; ?>
                                         <select name="category_id" id="category_id" class="form-control">
                                             <?php
                                             if ($permissions['categories']['read'] == 1) {
@@ -656,7 +725,7 @@ function isJSON($string)
                                                 <?php }
                                             } else { ?>
                                                 <option value="">---Select Category---</option>
-                                                <?php } ?>?>
+                                            <?php } ?>?>
                                         </select>
                                     </div>
 
@@ -676,39 +745,47 @@ function isJSON($string)
                                             <?php } ?>
                                         </select>
                                     </div>
-                                    <div class="form-group">
+                                   <!-- <div class="form-group">
                                         <label for="">Product Type :</label>
                                         <select name="indicator" id="indicator" class="form-control">
                                             <option value="">--Select Type--</option>
-                                            <option value="1" <?php if ($res[0]['indicator'] == 1) {
-                                                                    echo 'selected';
-                                                                } ?>>Veg</option>
-                                            <option value="2" <?php if ($res[0]['indicator'] == 2) {
-                                                                    echo 'selected';
-                                                                } ?>>Non Veg</option>
+                                            <option value="1" <?php /*if ($res[0]['indicator'] == 1) {
+                                                echo 'selected';
+                                            } */?>>Veg
+                                            </option>
+                                            <option value="2" <?php /*if ($res[0]['indicator'] == 2) {
+                                                echo 'selected';
+                                            } */?>>Non Veg
+                                            </option>
                                         </select>
-                                    </div>
+                                    </div>-->
                                     <div class="form-group">
                                         <label for="">Manufacturer :</label>
-                                        <input type="text" name="manufacturer" value="<?= $res[0]['manufacturer'] ?>" class="form-control">
+                                        <input type="text" name="manufacturer" value="<?= $res[0]['manufacturer'] ?>"
+                                               class="form-control">
                                     </div>
                                     <div class="form-group">
                                         <label for="">Made In :</label>
-                                        <input type="text" name="made_in" value="<?= $res[0]['made_in'] ?>" class="form-control">
+                                        <input type="text" name="made_in" value="<?= $res[0]['made_in'] ?>"
+                                               class="form-control">
                                     </div>
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="">Is Returnable? :</label><br>
-                                                <input type="checkbox" id="return_status_button" class="js-switch" <?= $res[0]['return_status'] == 1 ? 'checked' : '' ?>>
-                                                <input type="hidden" id="return_status" name="return_status" value="<?= $res[0]['return_status'] == 1 ? 1 : 0 ?>">
+                                                <input type="checkbox" id="return_status_button"
+                                                       class="js-switch" <?= $res[0]['return_status'] == 1 ? 'checked' : '' ?>>
+                                                <input type="hidden" id="return_status" name="return_status"
+                                                       value="<?= $res[0]['return_status'] == 1 ? 1 : 0 ?>">
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="">Is cancel-able? :</label><br>
-                                                <input type="checkbox" id="cancelable_button" class="js-switch" <?= $res[0]['cancelable_status'] == 1 ? 'checked' : '' ?>>
-                                                <input type="hidden" id="cancelable_status" name="cancelable_status" value="<?= $res[0]['cancelable_status'] == 1 ? 1 : 0 ?>">
+                                                <input type="checkbox" id="cancelable_button"
+                                                       class="js-switch" <?= $res[0]['cancelable_status'] == 1 ? 'checked' : '' ?>>
+                                                <input type="hidden" id="cancelable_status" name="cancelable_status"
+                                                       value="<?= $res[0]['cancelable_status'] == 1 ? 1 : 0 ?>">
                                             </div>
                                         </div>
                                         <?php
@@ -716,37 +793,54 @@ function isJSON($string)
                                         ?>
                                         <div class="col-md-3" id="till-status" style="<?= $style; ?>">
                                             <div class="form-group">
-                                                <label for="">Till which status? :</label> <i class="text-danger asterik">*</i> <?php echo isset($error['cancelable']) ? $error['cancelable'] : ''; ?><br>
+                                                <label for="">Till which status? :</label> <i
+                                                        class="text-danger asterik">*</i> <?php echo isset($error['cancelable']) ? $error['cancelable'] : ''; ?>
+                                                <br>
                                                 <select id="till_status" name="till_status" class="form-control">
                                                     <option value="">Select</option>
-                                                    <option value="received" <?= $res[0]['till_status'] == 'received' ? 'selected' : '' ?>>Received</option>
-                                                    <option value="processed" <?= $res[0]['till_status'] == 'processed' ? 'selected' : '' ?>>Processed</option>
-                                                    <option value="shipped" <?= $res[0]['till_status'] == 'shipped' ? 'selected' : '' ?>>Shipped</option>
+                                                    <option value="received" <?= $res[0]['till_status'] == 'received' ? 'selected' : '' ?>>
+                                                        Received
+                                                    </option>
+                                                    <option value="processed" <?= $res[0]['till_status'] == 'processed' ? 'selected' : '' ?>>
+                                                        Processed
+                                                    </option>
+                                                    <option value="shipped" <?= $res[0]['till_status'] == 'shipped' ? 'selected' : '' ?>>
+                                                        Shipped
+                                                    </option>
                                                 </select>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="exampleInputFile">Image <i class="text-danger asterik">*</i> &nbsp;&nbsp;&nbsp;*Please choose square image of larger than 350px*350px & smaller than 550px*550px.</label><?php echo isset($error['image']) ? $error['image'] : ''; ?>
-                                        <input type="file" name="image" id="image" title="Please choose square image of larger than 350px*350px & smaller than 550px*550px." /><br />
-                                        <img src="<?php echo $data['image']; ?>" width="210" height="160" />
+                                        <label for="exampleInputFile">Image <i class="text-danger asterik">*</i> &nbsp;&nbsp;&nbsp;*Please
+                                            choose square image of larger than 350px*350px & smaller than
+                                            550px*550px.</label><?php echo isset($error['image']) ? $error['image'] : ''; ?>
+                                        <input type="file" name="image" id="image"
+                                               title="Please choose square image of larger than 350px*350px & smaller than 550px*550px."/><br/>
+                                        <img src="<?php echo $data['image']; ?>" width="210" height="160"/>
                                     </div>
                                     <div class="form-group">
-                                        <label for="exampleInputFile">Other Images *Please choose square image of larger than 350px*350px & smaller than 550px*550px.</label><?php echo isset($error['other_images']) ? $error['other_images'] : ''; ?>
-                                        <input type="file" name="other_images[]" id="other_images" multiple title="Please choose square image of larger than 350px*350px & smaller than 550px*550px." /><br />
+                                        <label for="exampleInputFile">Other Images *Please choose square image of larger
+                                            than 350px*350px & smaller than
+                                            550px*550px.</label><?php echo isset($error['other_images']) ? $error['other_images'] : ''; ?>
+                                        <input type="file" name="other_images[]" id="other_images" multiple
+                                               title="Please choose square image of larger than 350px*350px & smaller than 550px*550px."/><br/>
                                         <?php
                                         if (!empty($data['other_images'])) {
                                             $other_images = json_decode($data['other_images']);
 
                                             for ($i = 0; $i < count($other_images); $i++) { ?>
-                                                <img src="<?= $other_images[$i]; ?>" height="160" />
-                                                <a class='btn btn-xs btn-danger delete-image' data-i='<?= $i; ?>' data-pid='<?= $_GET['id']; ?>'>Delete</a>
-                                        <?php }
+                                                <img src="<?= $other_images[$i]; ?>" height="160"/>
+                                                <a class='btn btn-xs btn-danger delete-image' data-i='<?= $i; ?>'
+                                                   data-pid='<?= $_GET['id']; ?>'>Delete</a>
+                                            <?php }
                                         } ?>
                                     </div>
                                     <div class="form-group">
-                                        <label for="exampleInputEmail1">Description :</label> <i class="text-danger asterik">*</i> <?php echo isset($error['description']) ? $error['description'] : ''; ?>
-                                        <textarea name="description" id="description" class="form-control" rows="16"><?php echo $data['description']; ?></textarea>
+                                        <label for="exampleInputEmail1">Description :</label> <i
+                                                class="text-danger asterik">*</i> <?php echo isset($error['description']) ? $error['description'] : ''; ?>
+                                        <textarea name="description" id="description" class="form-control"
+                                                  rows="16"><?php echo $data['description']; ?></textarea>
                                         <script type="text/javascript" src="css/js/ckeditor/ckeditor.js"></script>
                                         <script type="text/javascript">
                                             CKEDITOR.replace('description');
@@ -755,10 +849,12 @@ function isJSON($string)
                                     <div class="form-group">
                                         <label class="control-label ">Status :</label>
                                         <div id="product_status" class="btn-group">
-                                            <label class="btn btn-default" data-toggle-class="btn-primary" data-toggle-passive-class="btn-default">
+                                            <label class="btn btn-default" data-toggle-class="btn-primary"
+                                                   data-toggle-passive-class="btn-default">
                                                 <input type="radio" name="pr_status" value="0"> Deactive
                                             </label>
-                                            <label class="btn btn-primary" data-toggle-class="btn-primary" data-toggle-passive-class="btn-default">
+                                            <label class="btn btn-primary" data-toggle-class="btn-primary"
+                                                   data-toggle-passive-class="btn-default">
                                                 <input type="radio" name="pr_status" value="1"> Active
                                             </label>
                                         </div>
@@ -767,16 +863,16 @@ function isJSON($string)
                             </div>
                             <!-- /.box-body -->
                             <div class="box-footer">
-                                <input type="submit" class="btn-primary btn" value="Update" name="btnEdit" />
+                                <input type="submit" class="btn-primary btn" value="Update" name="btnEdit"/>
                             </div>
                 </form>
             </div><!-- /.box -->
         </div>
     </div>
 </section>
-<div class="separator"> </div>
+<div class="separator"></div>
 <script>
-    $(document).on('click', '.delete-image', function() {
+    $(document).on('click', '.delete-image', function () {
         var pid = $(this).data('pid');
         var i = $(this).data('i');
         if (confirm('Are you sure want to delete the image?')) {
@@ -784,7 +880,7 @@ function isJSON($string)
                 type: 'POST',
                 url: 'public/delete-other-images.php',
                 data: 'i=' + i + '&pid=' + pid,
-                success: function(result) {
+                success: function (result) {
                     if (result == '1') {
                         alert('Image deleted successfully');
                         window.location.replace("view-product-variants.php?id=" + pid);
@@ -800,7 +896,7 @@ function isJSON($string)
 <script>
     var changeCheckbox = document.querySelector('#return_status_button');
     var init = new Switchery(changeCheckbox);
-    changeCheckbox.onchange = function() {
+    changeCheckbox.onchange = function () {
         if ($(this).is(':checked')) {
             $('#return_status').val(1);
         } else {
@@ -811,7 +907,7 @@ function isJSON($string)
 <script>
     var changeCheckbox = document.querySelector('#cancelable_button');
     var init = new Switchery(changeCheckbox);
-    changeCheckbox.onchange = function() {
+    changeCheckbox.onchange = function () {
         if ($(this).is(':checked')) {
             $('#cancelable_status').val(1);
             $('#till-status').show();
@@ -824,7 +920,7 @@ function isJSON($string)
     };
 </script>
 <script>
-    $.validator.addMethod('lessThanEqual', function(value, element, param) {
+    $.validator.addMethod('lessThanEqual', function (value, element, param) {
         return this.optional(element) || parseInt(value) < parseInt($(param).val());
     }, "Discounted Price should be lesser than Price");
 
@@ -840,7 +936,7 @@ function isJSON($string)
                 lessThanEqual: "#price"
             },
             description: {
-                required: function(textarea) {
+                required: function (textarea) {
                     CKEDITOR.instances[textarea.id].updateElement();
                     var editorcontent = textarea.value.replace(/<[^>]*>/gi, '');
                     return editorcontent.length === 0;
@@ -853,16 +949,16 @@ function isJSON($string)
 
 </script>
 <script>
-    $('#add_loose_variation').on('click', function() {
+    $('#add_loose_variation').on('click', function () {
         html = '<div class="row"><div class="col-md-4"><div class="form-group loose_div">' +
-            '<label for="exampleInputEmail1">Measurement</label> <i class="text-danger asterik">*</i> <input type="number" step="any" min="0" class="form-control" name="insert_loose_measurement[]" required="">' +
+            '<label for="exampleInputEmail1">Variant</label> <i class="text-danger asterik">*</i> <input type="text" class="form-control" name="insert_loose_measurement[]" required="">' +
             '</div></div>' +
             '<div class="col-md-2"><div class="form-group loose_div">' +
             '<label for="unit">Unit:</label>' +
             '<select class="form-control" name="insert_loose_measurement_unit_id[]">' +
-            '<?php foreach ($unit_data as  $unit) {
-                    echo "<option value=" . $unit['id'] . ">" . $unit['short_code'] . "</option>";
-                } ?>' +
+            '<?php foreach ($unit_data as $unit) {
+                echo "<option value=" . $unit['id'] . ">" . $unit['short_code'] . "</option>";
+            } ?>' +
             '</select></div></div>' +
             '<div class="col-md-3"><div class="form-group loose_div">' +
             '<label for="price">Price  (<?= $settings['currency'] ?>):</label> <i class="text-danger asterik">*</i> ' +
@@ -878,16 +974,16 @@ function isJSON($string)
         $('#loose_variations').append(html);
     });
 
-    $('#add_packate_variation').on('click', function() {
+    $('#add_packate_variation').on('click', function () {
         html = '<div class="row"><div class="col-md-2"><div class="form-group packate_div">' +
-            '<label for="exampleInputEmail1">Measurement</label> <i class="text-danger asterik">*</i> <input type="number" step="any" min="0" class="form-control" name="insert_packate_measurement[]" required />' +
+            '<label for="exampleInputEmail1">Variant</label> <i class="text-danger asterik">*</i> <input type="text" class="form-control" name="insert_packate_measurement[]" required />' +
             '</div></div>' +
             '<div class="col-md-1"><div class="form-group packate_div">' +
             '<label for="unit">Unit:</label>' +
             '<select class="form-control" name="insert_packate_measurement_unit_id[]">' +
-            '<?php foreach ($unit_data as  $unit) {
-                    echo "<option value=" . $unit['id'] . ">" . $unit['short_code'] . "</option>";
-                } ?>' +
+            '<?php foreach ($unit_data as $unit) {
+                echo "<option value=" . $unit['id'] . ">" . $unit['short_code'] . "</option>";
+            } ?>' +
             '</select></div></div>' +
             '<div class="col-md-2"><div class="form-group packate_div">' +
             '<label for="price">Price  (<?= $settings['currency'] ?>):</label> <i class="text-danger asterik">*</i> <input type="number" step="any" min="0" class="form-control" name="insert_packate_price[]" id="packate_price" required />' +
@@ -902,12 +998,12 @@ function isJSON($string)
             '</div></div>' +
             '<div class="col-md-1"><div class="form-group packate_div">' +
             '<label for="unit">Unit:</label><select class="form-control" name="insert_packate_stock_unit_id[]">' +
-            '<?php foreach ($unit_data as  $unit) {
-                    echo "<option value=" . $unit['id'] . ">" . $unit['short_code'] . "</option>";
-                } ?>' +
+            '<?php foreach ($unit_data as $unit) {
+                echo "<option value=" . $unit['id'] . ">" . $unit['short_code'] . "</option>";
+            } ?>' +
             '</select></div></div>' +
-            '<div class="col-md-2"><div class="form-group packate_div"><label for="insert_packate_serve_for">Status:</label>'+
-            '<select name="insert_packate_serve_for[]" class="form-control valid" required="" aria-invalid="false"><option value="Available">Available</option><option value="Sold Out">Sold Out</option></select></div></div>'+
+            '<div class="col-md-2"><div class="form-group packate_div"><label for="insert_packate_serve_for">Status:</label>' +
+            '<select name="insert_packate_serve_for[]" class="form-control valid" required="" aria-invalid="false"><option value="Available">Available</option><option value="Sold Out">Sold Out</option></select></div></div>' +
             '<div class="col-md-1" style="display: grid;">' +
             '<label>Remove</label><a class="remove_variation text-danger" data-id="remove" title="Remove variation of product" style="cursor: pointer;"><i class="fa fa-times fa-2x"></i></a>' +
             '</div></div>';
@@ -915,8 +1011,8 @@ function isJSON($string)
     });
 </script>
 <script>
- 
-    $(document).on('click', '.remove_variation', function() {
+
+    $(document).on('click', '.remove_variation', function () {
         if ($(this).data('id') == 'data_delete') {
             if (confirm('Are you sure? Want to delete this row')) {
                 var id = $(this).closest('div.row').find("input[id='product_variant_id']").val();
@@ -924,7 +1020,7 @@ function isJSON($string)
                     url: 'public/db-operation.php',
                     type: "post",
                     data: 'id=' + id + '&delete_variant=1',
-                    success: function(result) {
+                    success: function (result) {
                         location.reload();
                     }
                 });
@@ -934,17 +1030,17 @@ function isJSON($string)
         }
     });
 
-    $(document).on('change', '#category_id', function() {
+    $(document).on('change', '#category_id', function () {
         $.ajax({
             url: 'public/db-operation.php',
             method: 'POST',
             data: 'category_id=' + $('#category_id').val() + '&find_subcategory=1',
-            success: function(data) {
+            success: function (data) {
                 $('#subcategory_id').html("<option value=''>---Select Subcategory---</option>" + data);
             }
         });
     });
-    $(document).on('change', '#packate', function() {
+    $(document).on('change', '#packate', function () {
         $('#packate_div').show();
         $('.packate_div').show();
         $('#loose_div').hide();
@@ -952,7 +1048,7 @@ function isJSON($string)
         $('#status_div').hide();
         $('#loose_stock_div').hide();
     });
-    $(document).on('change', '#loose', function() {
+    $(document).on('change', '#loose', function () {
         $('#loose_div').show();
         $('.loose_div').show();
         $('#loose_stock_div').show();
@@ -960,7 +1056,7 @@ function isJSON($string)
         $('#packate_div').hide();
         $('.packate_div').hide();
     });
-    $(document).ready(function() {
+    $(document).ready(function () {
         var product_status = '<?= $product_status ?>';
         $("input[name=pr_status][value=1]").prop('checked', true);
         if (product_status == 0)
