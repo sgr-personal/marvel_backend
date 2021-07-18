@@ -899,7 +899,6 @@ function isJSON($string)
     $(document).ready(function () {
         $("#profession_id").select2();
     });
-    $(document).on('click', '.delete-image', function() {
     $(document).on('click', '.delete-image', function () {
         var pid = $(this).data('pid');
         var i = $(this).data('i');
@@ -1039,9 +1038,6 @@ function isJSON($string)
     });
 </script>
 <script>
-
-    $(document).on('click', '.remove_variation', function () {
-
     $(document).on('click', '.remove_variation', function() {
         if ($(this).data('id') == 'data_delete') {
             if (confirm('Are you sure? Want to delete this row')) {
