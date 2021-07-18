@@ -234,7 +234,7 @@ if (isset($_POST['btnAdd'])) {
                     $res_unit = $db->getResult();
                     ?>
                     <div class="box-body">
-                        <div class="form-group">
+                        <div class="row">
                             <div class='col-md-8'>
                                 <label for="exampleInputEmail1">Product Name</label> <i class="text-danger asterik">*</i><?php echo isset($error['name']) ? $error['name'] : ''; ?>
                                 <input type="text" class="form-control" name="name" required>
@@ -254,17 +254,17 @@ if (isset($_POST['btnAdd'])) {
                                 </select>
                             </div>
                         </div>
-                        <label for="type"><br>Type</label><?php echo isset($error['type']) ? $error['type'] : ''; ?>
-                        <div class="form-group">
-                            <label class="radio-inline"><input type="radio" name="type" id="packate" value="packet" checked>Packet</label>
-                            <label class="radio-inline"><input type="radio" name="type" id="loose" value="loose">Loose</label>
-                        </div>
+<!--                        <label for="type"><br>Type</label>--><?php //echo isset($error['type']) ? $error['type'] : ''; ?>
+<!--                        <div class="form-group">-->
+<!--                            <label class="radio-inline"><input type="radio" name="type" id="packate" value="packet" checked>Packet</label>-->
+<!--                            <label class="radio-inline"><input type="radio" name="type" id="loose" value="loose">Loose</label>-->
+<!--                        </div>-->
                         <hr>
-                        <div id="packate_div" style="display:none">
+<!--                        <div id="packate_div">-->
                             <div class="row">
                                 <div class="col-md-2">
                                     <div class="form-group packate_div">
-                                        <label for="exampleInputEmail1">Measurement</label> <i class="text-danger asterik">*</i><input type="number" step="any" min="0" class="form-control" name="packate_measurement[]" required />
+                                        <label for="exampleInputEmail1">Variant</label> <i class="text-danger asterik">*</i><input type="text" class="form-control" name="packate_measurement[]" required />
                                     </div>
                                 </div>
                                 <div class="col-md-1">
@@ -322,72 +322,72 @@ if (isset($_POST['btnAdd'])) {
                                     <a id="add_packate_variation" title="Add variation of product" style="cursor: pointer;"><i class="fa fa-plus-square-o fa-2x"></i></a>
                                 </div>
                             </div>
-                        </div>
+<!--                        </div>-->
 
 
-                        <div id="loose_div" style="display:none;">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-group loose_div">
-                                        <label for="exampleInputEmail1">Measurement</label> <i class="text-danger asterik">*</i>
-                                        <input type="number" step="any"  min="0" class="form-control" name="loose_measurement[]" required="">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="form-group loose_div">
-                                        <label for="unit">Unit:</label>
-                                        <select class="form-control" name="loose_measurement_unit_id[]">
-                                            <?php
-                                            foreach ($res_unit as  $row) {
-                                                echo "<option value='" . $row['id'] . "'>" . $row['short_code'] . "</option>";
-                                            }
-                                            ?>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group loose_div">
-                                        <label for="price">Price (<?= $settings['currency'] ?>):</label> <i class="text-danger asterik">*</i>
-                                        <input type="number" step="any" min="0" class="form-control" name="loose_price[]" id="loose_price" required="">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="form-group loose_div">
-                                        <label for="discounted_price">Discounted Price(<?= $settings['currency'] ?>):</label>
-                                        <input type="number" step="any" min="0" class="form-control" name="loose_discounted_price[]" id="discounted_price" />
-                                    </div>
-                                </div>
-                                <div class="col-md-1">
-                                    <label>Variation</label>
-                                    <a id="add_loose_variation" title="Add variation of product" style="cursor: pointer;"><i class="fa fa-plus-square-o fa-2x"></i></a>
-                                </div>
-                            </div>
-                        </div>
+<!--                        <div id="loose_div" style="display:none;">-->
+<!--                            <div class="row">-->
+<!--                                <div class="col-md-4">-->
+<!--                                    <div class="form-group loose_div">-->
+<!--                                        <label for="exampleInputEmail1">Measurement</label> <i class="text-danger asterik">*</i>-->
+<!--                                        <input type="number" step="any"  min="0" class="form-control" name="loose_measurement[]" required="">-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div class="col-md-2">-->
+<!--                                    <div class="form-group loose_div">-->
+<!--                                        <label for="unit">Unit:</label>-->
+<!--                                        <select class="form-control" name="loose_measurement_unit_id[]">-->
+<!--                                            --><?php
+//                                            foreach ($res_unit as  $row) {
+//                                                echo "<option value='" . $row['id'] . "'>" . $row['short_code'] . "</option>";
+//                                            }
+//                                            ?>
+<!--                                        </select>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div class="col-md-3">-->
+<!--                                    <div class="form-group loose_div">-->
+<!--                                        <label for="price">Price (--><?//= $settings['currency'] ?><!--):</label> <i class="text-danger asterik">*</i>-->
+<!--                                        <input type="number" step="any" min="0" class="form-control" name="loose_price[]" id="loose_price" required="">-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div class="col-md-2">-->
+<!--                                    <div class="form-group loose_div">-->
+<!--                                        <label for="discounted_price">Discounted Price(--><?//= $settings['currency'] ?><!--):</label>-->
+<!--                                        <input type="number" step="any" min="0" class="form-control" name="loose_discounted_price[]" id="discounted_price" />-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div class="col-md-1">-->
+<!--                                    <label>Variation</label>-->
+<!--                                    <a id="add_loose_variation" title="Add variation of product" style="cursor: pointer;"><i class="fa fa-plus-square-o fa-2x"></i></a>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
                         <div id="variations">
                         </div>
                         <hr>
-                        <div class="form-group" id="loose_stock_div" style="display:none;">
-                            <label for="quantity">Stock :</label> <i class="text-danger asterik">*</i><?php echo isset($error['quantity']) ? $error['quantity'] : ''; ?>
-                            <input type="number" step="any" min="0" class="form-control" name="loose_stock" required><br>
-                            <div class="form-group">
-                                <label for="stock_unit"><br>Unit :</label><?php echo isset($error['stock_unit']) ? $error['stock_unit'] : ''; ?>
-                                <select class="form-control" name="loose_stock_unit_id" id="loose_stock_unit_id">
-                                    <?php
-                                    foreach ($res_unit as $row) {
-                                        echo "<option value='" . $row['id'] . "'>" . $row['short_code'] . "</option>";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group" id="packate_server_hide">
-                            <label for="serve_for">Status :</label><?php echo isset($error['serve_for']) ? $error['serve_for'] : ''; ?>
-                            <select name="serve_for" class="form-control" required>
-                                <option value="Available">Available</option>
-                                <option value="Sold Out">Sold Out</option>
-                            </select>
-                            <br />
-                        </div>
+<!--                        <div class="form-group" id="loose_stock_div" style="display:none;">-->
+<!--                            <label for="quantity">Stock :</label> <i class="text-danger asterik">*</i>--><?php //echo isset($error['quantity']) ? $error['quantity'] : ''; ?>
+<!--                            <input type="number" step="any" min="0" class="form-control" name="loose_stock" required><br>-->
+<!--                            <div class="form-group">-->
+<!--                                <label for="stock_unit"><br>Unit :</label>--><?php //echo isset($error['stock_unit']) ? $error['stock_unit'] : ''; ?>
+<!--                                <select class="form-control" name="loose_stock_unit_id" id="loose_stock_unit_id">-->
+<!--                                    --><?php
+//                                    foreach ($res_unit as $row) {
+//                                        echo "<option value='" . $row['id'] . "'>" . $row['short_code'] . "</option>";
+//                                    }
+//                                    ?>
+<!--                                </select>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                        <div class="form-group" id="packate_server_hide">-->
+<!--                            <label for="serve_for">Status :</label>--><?php //echo isset($error['serve_for']) ? $error['serve_for'] : ''; ?>
+<!--                            <select name="serve_for" class="form-control" required>-->
+<!--                                <option value="Available">Available</option>-->
+<!--                                <option value="Sold Out">Sold Out</option>-->
+<!--                            </select>-->
+<!--                            <br />-->
+<!--                        </div>-->
                         <div class="form-group">
                             <label for="category_id">Category :</label> <i class="text-danger asterik">*</i><?php echo isset($error['category_id']) ? $error['category_id'] : ''; ?>
                             <select name="category_id" id="category_id" class="form-control" required>
@@ -406,14 +406,14 @@ if (isset($_POST['btnAdd'])) {
                                 <option value="">--Select Sub Category--</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="">Product Type :</label>
-                            <select name="indicator" id="indicator" class="form-control">
-                                <option value="0">--Select Type--</option>
-                                <option value="1">Veg</option>
-                                <option value="2">Non Veg</option>
-                            </select>
-                        </div>
+<!--                        <div class="form-group">-->
+<!--                            <label for="">Product Type :</label>-->
+<!--                            <select name="indicator" id="indicator" class="form-control">-->
+<!--                                <option value="0">--Select Type--</option>-->
+<!--                                <option value="1">Veg</option>-->
+<!--                                <option value="2">Non Veg</option>-->
+<!--                            </select>-->
+<!--                        </div>-->
                         <div class="form-group">
                             <label for="profession">Profession :</label> <i class="text-danger asterik">*</i>
                             <select class="form-control select2" data-toggle="select2"
@@ -519,12 +519,12 @@ if (isset($_POST['btnAdd'])) {
     };
 </script>
 <script>
-    if ($('#packate').prop('checked')) {
-        $('#packate_div').show();
-        $('#packate_server_hide').hide();
-        $('.loose_div').children(":input").prop('disabled', true);
-        $('#loose_stock_div').children(":input").prop('disabled', true);
-    }
+    // if ($('#packate').prop('checked')) {
+    //     $('#packate_div').show();
+    //     $('#packate_server_hide').hide();
+    //     $('.loose_div').children(":input").prop('disabled', true);
+    //     $('#loose_stock_div').children(":input").prop('disabled', true);
+    // }
 
     $.validator.addMethod('lessThanEqual', function(value, element, param) {
         return this.optional(element) || parseInt(value) < parseInt($(param).val());
@@ -534,7 +534,7 @@ if (isset($_POST['btnAdd'])) {
 <script>
     var num = 2;
     $('#add_packate_variation').on('click', function() {
-        html = '<div class="row"><div class="col-md-2"><div class="form-group"><label for="measurement">Measurement</label> <i class="text-danger asterik">*</i>' +
+        html = '<div class="row"><div class="col-md-2"><div class="form-group"><label for="measurement">Variant</label> <i class="text-danger asterik">*</i>' +
             '<input type="number" class="form-control" name="packate_measurement[]" required="" step="any" min="0"></div></div>' +
             '<div class="col-md-1"><div class="form-group">' +
             '<label for="measurement_unit">Unit</label><select class="form-control" name="packate_measurement_unit_id[]">' +
@@ -637,29 +637,29 @@ if (isset($_POST['btnAdd'])) {
         });
     });
 
-    $(document).on('change', '#packate', function() {
-        $('#variations').html("");
-        $('#packate_div').show();
-        $('#packate_server_hide').hide();
-        $('.packate_div').children(":input").prop('disabled', false);
-        $('#loose_div').hide();
-        $('.loose_div').children(":input").prop('disabled', true);
-        $('#loose_stock_div').hide();
-        $('#loose_stock_unit_id').hide();
-        $('#loose_stock_div').children(":input").prop('disabled', true);
-
-    });
-    $(document).on('change', '#loose', function() {
-        $('#variations').html("");
-        $('#loose_div').show();
-        $('.loose_div').children(":input").prop('disabled', false);
-        $('#loose_stock_div').show();
-        $('#loose_stock_div').children(":input").prop('disabled', false);
-        $('#packate_server_hide').show();
-        $('#packate_div').hide();
-        $('.packate_div').children(":input").prop('disabled', true);
-
-    });
+    // $(document).on('change', '#packate', function() {
+    //     $('#variations').html("");
+    //     $('#packate_div').show();
+    //     $('#packate_server_hide').hide();
+    //     $('.packate_div').children(":input").prop('disabled', false);
+    //     $('#loose_div').hide();
+    //     $('.loose_div').children(":input").prop('disabled', true);
+    //     $('#loose_stock_div').hide();
+    //     $('#loose_stock_unit_id').hide();
+    //     $('#loose_stock_div').children(":input").prop('disabled', true);
+    //
+    // });
+    // $(document).on('change', '#loose', function() {
+    //     $('#variations').html("");
+    //     $('#loose_div').show();
+    //     $('.loose_div').children(":input").prop('disabled', false);
+    //     $('#loose_stock_div').show();
+    //     $('#loose_stock_div').children(":input").prop('disabled', false);
+    //     $('#packate_server_hide').show();
+    //     $('#packate_div').hide();
+    //     $('.packate_div').children(":input").prop('disabled', true);
+    //
+    // });
 
     // function validate_amount(value) {
     //     if (parseInt(value) < 0) {
