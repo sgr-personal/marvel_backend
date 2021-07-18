@@ -33,6 +33,7 @@ if (isset($_POST['btnAdd'])) {
         $description = $db->escapeString($fn->xss_clean($_POST['description']));
         $manufacturer = (isset($_POST['manufacturer']) && $_POST['manufacturer'] != '') ? $db->escapeString($fn->xss_clean($_POST['manufacturer'])) : '';
         $made_in = (isset($_POST['made_in']) && $_POST['made_in'] != '') ? $db->escapeString($fn->xss_clean($_POST['made_in'])) : '';
+        $commission = (isset($_POST['commission']) && $_POST['commission'] != '') ? $db->escapeString($fn->xss_clean($_POST['commission'])) : '';
         $indicator = (isset($_POST['indicator']) && $_POST['indicator'] != '') ? $db->escapeString($fn->xss_clean($_POST['indicator'])) : '0';
         $return_status = (isset($_POST['return_status']) && $_POST['return_status'] != '') ? $db->escapeString($fn->xss_clean($_POST['return_status'])) : '0';
         $cancelable_status = (isset($_POST['cancelable_status']) && $_POST['cancelable_status'] != '') ? $db->escapeString($fn->xss_clean($_POST['cancelable_status'])) : '0';
@@ -125,7 +126,7 @@ if (isset($_POST['btnAdd'])) {
             $upload_image = 'upload/images/' . $image;
 
             // insert new data to product table
-            $sql = "INSERT INTO products (name,tax_id,slug,category_id,subcategory_id,profession_id,image,other_images,description,indicator,manufacturer,made_in,return_status,cancelable_status, till_status) VALUES('$name','$tax_id','$slug','$category_id','$subcategory_id','$profession_id','$upload_image','$other_images','$description','$indicator','$manufacturer','$made_in','$return_status','$cancelable_status','$till_status')";
+            $sql = "INSERT INTO products (name,tax_id,slug,category_id,subcategory_id,profession_id,image,other_images,description,indicator,manufacturer,made_in,return_status,cancelable_status, till_status,commission) VALUES('$name','$tax_id','$slug','$category_id','$subcategory_id','$profession_id','$upload_image','$other_images','$description','$indicator','$manufacturer','$made_in','$return_status','$cancelable_status','$till_status','$commission')";
             // echo $sql;
             $db->sql($sql);
             $product_result = $db->getResult();
@@ -431,6 +432,10 @@ if (isset($_POST['btnAdd'])) {
                         <div class="form-group">
                             <label for="">Made In :</label>
                             <input type="text" name="made_in" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="">Commission :</label>
+                            <input type="text" name="commission" class="form-control">
                         </div>
                         <div class="row">
                             <div class="col-md-3">

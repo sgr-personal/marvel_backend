@@ -65,6 +65,7 @@ if (isset($_POST['btnEdit'])) {
         $pr_status = $db->escapeString($fn->xss_clean($_POST['pr_status']));
         $manufacturer = (isset($_POST['manufacturer']) && $_POST['manufacturer'] != '') ? $db->escapeString($fn->xss_clean($_POST['manufacturer'])) : '';
         $made_in = (isset($_POST['made_in']) && $_POST['made_in'] != '') ? $db->escapeString($fn->xss_clean($_POST['made_in'])) : '';
+        $commission = (isset($_POST['commission']) && $_POST['commission'] != '') ? $db->escapeString($fn->xss_clean($_POST['commission'])) : '';
         $indicator = (isset($_POST['indicator']) && $_POST['indicator'] != '') ? $db->escapeString($fn->xss_clean($_POST['indicator'])) : '0';
         $return_status = (isset($_POST['return_status']) && $_POST['return_status'] != '') ? $db->escapeString($fn->xss_clean($_POST['return_status'])) : '0';
         $cancelable_status = (isset($_POST['cancelable_status']) && $_POST['cancelable_status'] != '') ? $db->escapeString($fn->xss_clean($_POST['cancelable_status'])) : '0';
@@ -160,10 +161,10 @@ if (isset($_POST['btnEdit'])) {
                 $upload = move_uploaded_file($_FILES['image']['tmp_name'], 'upload/images/' . $image);
 
                 $upload_image = 'upload/images/' . $image;
-                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' , subcategory_id = '$subcategory_id', profession_id = '$profession_id', image = '$upload_image', description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status',`status` = $pr_status WHERE id = $ID";
+                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' , subcategory_id = '$subcategory_id', profession_id = '$profession_id', image = '$upload_image', description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status',`status` = $pr_status,`commission` = $commission WHERE id = $ID";
                 $db->sql($sql_query);
             } else {
-                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' ,category_id = '$category_id' ,subcategory_id = '$subcategory_id' , profession_id = '$profession_id', description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status' ,`status` = $pr_status WHERE id = $ID";
+                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' ,category_id = '$category_id' ,subcategory_id = '$subcategory_id' , profession_id = '$profession_id', description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status' ,`status` = $pr_status,`commission` = $commission WHERE id = $ID";
                 $db->sql($sql_query);
             }
 
@@ -750,8 +751,6 @@ function isJSON($string)
                                             <?php } ?>
                                         </select>
                                     </div>
-                                   <!-- <div class="form-group">
-
                                     <div class="form-group">
                                         <label for="profession_id">Profession :</label> <i class="text-danger asterik">*</i>
                                         <select class="form-control select2" data-toggle="select2"
@@ -768,7 +767,7 @@ function isJSON($string)
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
-
+                                        <!--
                                     <div class="form-group">
                                         <label for="">Product Type :</label>
                                         <select name="indicator" id="indicator" class="form-control">
@@ -790,8 +789,12 @@ function isJSON($string)
                                     </div>
                                     <div class="form-group">
                                         <label for="">Made In :</label>
-                                        <input type="text" name="made_in" value="<?= $res[0]['made_in'] ?>"
+                                        <input type="number" name="made_in" value="<?= $res[0]['made_in'] ?>"
                                                class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="">Commission :</label>
+                                        <input type="text" name="commission" value="<?= $res[0]['commission'] ?>" class="form-control">
                                     </div>
                                     <div class="row">
                                         <div class="col-md-3">

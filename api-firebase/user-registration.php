@@ -104,6 +104,7 @@ if ((isset($_POST['type'])) && ($_POST['type'] == 'register')) {
     $api_key     = (isset($_POST['api_key'])) ? $db->escapeString($fn->xss_clean($_POST['api_key'])) : "";
     $latitude     = (isset($_POST['latitude'])) ? $db->escapeString($fn->xss_clean($_POST['latitude'])) : "0";
     $longitude     = (isset($_POST['longitude'])) ? $db->escapeString($fn->xss_clean($_POST['longitude'])) : "0";
+    $is_agent     = (isset($_POST['is_agent'])) ? $db->escapeString($fn->xss_clean($_POST['is_agent'])) : "0";
     $status     = 1;
     $chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     $referral_code  = "";
@@ -166,9 +167,9 @@ if ((isset($_POST['type'])) && ($_POST['type'] == 'register')) {
                 $filename = 'default_user_profile.png';
                 $full_path = '../upload/profile/' . "" . $filename;
             }
-            //user is not registered, insert the data to the database  
-            $sql = "INSERT INTO `users`(`name`, `email`,`profile`, `mobile`,`dob`, `city`,`area`, `street` , `pincode`, `apikey`, `password`,`referral_code`,`friends_code`,`fcm_id`,`latitude`,`longitude`,`status`,`country_code`) VALUES 
-			('$name','$email','$filename','$mobile','$dob','$city','$area','$street','$pincode','$api_key','$password','$referral_code','$friends_code','$fcm_id','$latitude','$longitude',$status,'$country_code')";
+            //user is not registered, insert the data to the database
+            $sql = "INSERT INTO `users`(`name`, `email`,`profile`, `mobile`,`dob`, `city`,`area`, `street` , `pincode`, `apikey`, `password`,`referral_code`,`friends_code`,`fcm_id`,`latitude`,`longitude`,`is_agent`,`status`,`country_code`) VALUES 
+			('$name','$email','$filename','$mobile','$dob','$city','$area','$street','$pincode','$api_key','$password','$referral_code','$friends_code','$fcm_id','$latitude','$longitude','$is_agent',$status,'$country_code')";
             $data = array(
                 'name' => $name,
                 'email' => $email,
@@ -187,6 +188,7 @@ if ((isset($_POST['type'])) && ($_POST['type'] == 'register')) {
                 'friends_code' => $friends_code,
                 'latitude' => $latitude,
                 'longitude' => $longitude,
+                'is_agent' => $is_agent,
                 'status' => $status
             );
             $db->sql($sql);
@@ -416,7 +418,7 @@ if (isset($_POST['type']) && $_POST['type'] != '' && $_POST['type'] == 'forgot-p
         $message = 'Your Password for ' . $app_name . ' is Reset. Please login using new Password : ' . $password . '.';
         $sql = 'UPDATE `users` SET `password`="' . $encrypted_password . '" WHERE `mobile`="' . $mobile . '"';
         if ($db->sql($sql)) {
-            // sendSms($mobile,$message,$country_code);    
+            // sendSms($mobile,$message,$country_code);
             $response["error"]   = false;
             $response["message"] = "Password is sent successfully! Please login via the OTP sent to your mobile number!";
         }
