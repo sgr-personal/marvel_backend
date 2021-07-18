@@ -324,6 +324,7 @@ $res_logo = $db->getResult();
                                 <a href="custom_product_category.php"><i class="fa fa-users"></i> Category </a>
                             </li>
                             <li><a href="custom_product.php"><i class="fa fa-exchange"></i>Products</a></li>
+                            <li><a href="custom_product_query.php"><i class="fa fa-exchange"></i>Custom Product Query</a></li>
                         </ul>
                     </li>
                     <li class="treeview">

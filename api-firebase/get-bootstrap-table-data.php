@@ -2095,7 +2095,7 @@ if (isset($_GET['table']) && $_GET['table'] == 'custom_product') {
 
     if (isset($_GET['search']) && !empty($_GET['search'])) {
         $search = $db->escapeString($fn->xss_clean($_GET['search']));
-        $where .= " Where `name` like '%" . $search . "%' OR `proce` like '%" . $search . "%'";
+        $where .= " Where `name` like '%" . $search . "%' OR `price` like '%" . $search . "%'";
     }
 
     $sql = "SELECT COUNT(`id`) as total FROM `custom_product` " . $where;
@@ -2122,6 +2122,63 @@ if (isset($_GET['table']) && $_GET['table'] == 'custom_product') {
         $tempRow['category_name'] = $row['category_name'];
         $tempRow['name'] = $row['name'];
         $tempRow['price'] = $row['price'];
+        $tempRow['operate'] = $operate;
+        $rows[] = $tempRow;
+    }
+    $bulkData['rows'] = $rows;
+    print_r(json_encode($bulkData));
+}
+
+// data of 'CUSTOM PRODUCT Query' table goes here
+if (isset($_GET['table']) && $_GET['table'] == 'custom_product_query') {
+    $offset = 0;
+    $limit = 10;
+    $sort = 'id';
+    $order = 'DESC';
+    $where = '';
+    if (isset($_GET['offset']))
+        $offset = $db->escapeString($fn->xss_clean($_GET['offset']));
+    if (isset($_GET['limit']))
+        $limit = $db->escapeString($fn->xss_clean($_GET['limit']));
+
+    if (isset($_GET['sort']))
+        $sort = $db->escapeString($fn->xss_clean($_GET['sort']));
+    if (isset($_GET['order']))
+        $order = $db->escapeString($fn->xss_clean($_GET['order']));
+
+    if (isset($_GET['search']) && !empty($_GET['search'])) {
+        $search = $db->escapeString($fn->xss_clean($_GET['search']));
+        $where .= " Where `person` like '%" . $search . "%' OR `email` like '%" . $search . "%' OR `price` like '%" . $search . "%'";
+    }
+
+    $sql = "SELECT COUNT(`id`) as total FROM `custom_product_query` " . $where;
+    $db->sql($sql);
+    $res = $db->getResult();
+    foreach ($res as $row)
+        $total = $row['total'];
+
+    $sql = "SELECT * FROM `custom_product_query` " . $where . " ORDER BY " . $sort . " " . $order . " LIMIT " . $offset . ", " . $limit;
+    $db->sql($sql);
+    $res = $db->getResult();
+
+    $bulkData = array();
+    $bulkData['total'] = $total;
+    $rows = array();
+    $tempRow = array();
+
+    foreach ($res as $row) {
+        $sql = "SELECT GROUP_CONCAT(name) as products FROM `custom_product` WHERE id IN (".$row['product_ids'].") ";
+        $db->sql($sql);
+        $custProd = $db->getResult();
+
+        $operate = "";
+        $operate .= ' <a href="http://127.0.0.1:8000/quotation/' . $row['id'] . '"><i class="fa fa-eye"></i> View Pdf</a>';
+
+        $tempRow['id'] = $row['id'];
+        $tempRow['name'] = $row['person'];
+        $tempRow['email'] = $row['email'];
+        $tempRow['phone'] = $row['phone'];
+        $tempRow['products'] = str_replace(",","<br />",$custProd['0']['products']);
         $tempRow['operate'] = $operate;
         $rows[] = $tempRow;
     }
