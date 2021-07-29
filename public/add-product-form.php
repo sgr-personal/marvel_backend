@@ -434,7 +434,7 @@ if (isset($_POST['btnAdd'])) {
                             <input type="text" name="made_in" class="form-control">
                         </div>
                         <div class="form-group">
-                            <label for="">Commission :</label>
+                            <label for="">Agent Commission :</label>
                             <input type="text" name="commission" class="form-control">
                         </div>
                         <div class="row">

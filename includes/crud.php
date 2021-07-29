@@ -5,7 +5,7 @@
  * @Package Database
  */
 
-define('DOMAIN_URL', 'http://localhost/marvel_admin/'); /* chnage to your domain here - don't forget to add forward slash at the end of the URL like this "/" */
+define('DOMAIN_URL', 'http://localhost/marvel_backend/'); /* chnage to your domain here - don't forget to add forward slash at the end of the URL like this "/" */
 define('ALLOW_MODIFICATION', 1);
 define('JWT_SECRET_KEY','abc'); /* chnage to your secret key here set it to anything you like*/
 

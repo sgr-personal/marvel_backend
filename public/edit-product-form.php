@@ -793,7 +793,7 @@ function isJSON($string)
                                                class="form-control">
                                     </div>
                                     <div class="form-group">
-                                        <label for="">Commission :</label>
+                                        <label for="">Agent Commission :</label>
                                         <input type="text" name="commission" value="<?= $res[0]['commission'] ?>" class="form-control">
                                     </div>
                                     <div class="row">

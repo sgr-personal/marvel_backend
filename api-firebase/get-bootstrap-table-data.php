@@ -474,12 +474,21 @@ if (isset($_GET['table']) && $_GET['table'] == 'users') {
     $rows = array();
     $tempRow = array();
 
+    $operate = "";
     foreach ($res as $row) {
+        $operate = ' <a class="btn-xs btn-danger" href="delete-customers.php?id=' . $row['id'] . '"><i class="fa fa-trash-o"></i>Delete</a>';
         $tempRow['id'] = $row['id'];
         $tempRow['name'] = $row['name'];
         $path = DOMAIN_URL . 'upload/profile/';
+        $imgPath = "";
+        if(strpos($path . $row['profile'], "google") !== false) {
+            $imgPath = $row['profile'];
+        } else {
+            $imgPath = $path . $row['profile'];
+        }
+
         if (!empty($row['profile'])) {
-            $tempRow['profile'] = "<a data-lightbox='product' href='" . $path . $row['profile'] . "' data-caption='" . $row['name'] . "'><img src='" . $path . $row['profile'] . "' title='" . $row['name'] . "' height='50' /></a>";
+            $tempRow['profile'] = "<a data-lightbox='product' href='" . $imgPath . "' data-caption='" . $row['name'] . "'><img src='" . $imgPath . "' title='" . $row['name'] . "' height='50' /></a>";
         } else {
             $tempRow['profile'] = "<a data-lightbox='product' href='" . $path . "default_user_profile.png' data-caption='" . $row['name'] . "'><img src='" . $path . "default_user_profile.png' title='" . $row['name'] . "' height='50' /></a>";
         }
@@ -502,6 +511,7 @@ if (isset($_GET['table']) && $_GET['table'] == 'users') {
 
         $tempRow['status'] = $row['status'] == 1 ? "<label class='label label-success'>Active</label>" : "<label class='label label-danger'>De-Active</label>";
         $tempRow['created_at'] = $row['created_at'];
+        $tempRow['operate'] = $operate;
         $rows[] = $tempRow;
     }
     $bulkData['rows'] = $rows;
