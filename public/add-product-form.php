@@ -29,7 +29,7 @@ if (isset($_POST['btnAdd'])) {
         $slug = $function->slugify($db->escapeString($fn->xss_clean($_POST['name'])));
         $category_id = $db->escapeString($fn->xss_clean($_POST['category_id']));
         $subcategory_id = (isset($_POST['subcategory_id']) && $_POST['subcategory_id'] != '') ? $db->escapeString($fn->xss_clean($_POST['subcategory_id'])) : 0;
-        $serve_for = $db->escapeString($fn->xss_clean($_POST['serve_for']));
+        $serve_for = !empty($_POST['packate_serve_for']) ? $_POST['packate_serve_for'][0] : "Available";
         $description = $db->escapeString($fn->xss_clean($_POST['description']));
         $manufacturer = (isset($_POST['manufacturer']) && $_POST['manufacturer'] != '') ? $db->escapeString($fn->xss_clean($_POST['manufacturer'])) : '';
         $made_in = (isset($_POST['made_in']) && $_POST['made_in'] != '') ? $db->escapeString($fn->xss_clean($_POST['made_in'])) : '';
@@ -140,11 +140,11 @@ if (isset($_POST['btnAdd'])) {
             $db->sql($sql);
             $res_inner = $db->getResult();
             if ($product_result == 1) {
-                if ($_POST['type'] == 'packet') {
+//                if ($_POST['type'] == 'packet') {
                     $packate_measurement = $db->escapeString($fn->xss_clean($_POST['packate_measurement']));
                     for ($i = 0; $i < count($_POST['packate_measurement']); $i++) {
                         $product_id = $db->escapeString($res_inner[0]['id']);
-                        $type = $db->escapeString($fn->xss_clean($_POST['type']));
+                        $type = 'packet';
                         $measurement = $db->escapeString($fn->xss_clean($_POST['packate_measurement'][$i]));
                         $measurement_unit_id = $db->escapeString($fn->xss_clean($_POST['packate_measurement_unit_id'][$i]));
 
@@ -165,7 +165,8 @@ if (isset($_POST['btnAdd'])) {
                         $product_variant = 1;
                     }
 
-                } elseif ($_POST['type'] == "loose") {
+//                }
+                /*elseif ($_POST['type'] == "loose") {
                     for ($i = 0; $i < count($_POST['loose_measurement']); $i++) {
                         $product_id = $db->escapeString($res_inner[0]['id']);
                         $type = $db->escapeString($fn->xss_clean($_POST['type']));
@@ -187,7 +188,7 @@ if (isset($_POST['btnAdd'])) {
                     } else {
                         $product_variant = 1;
                     }
-                }
+                }*/
             }
             if ($product_result == 1 && $product_variant == 1) {
                 $error['add_menu'] = "<section class='content-header'>

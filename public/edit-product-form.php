@@ -177,11 +177,11 @@ if (isset($_POST['btnEdit'])) {
                 $count = count($_POST['packate_measurement']);
             }
             for ($i = 0; $i < $count; $i++) {
-                if ($_POST['type'] == "packet") {
+//                if ($_POST['type'] == "packet") {
                     $stock = $db->escapeString($fn->xss_clean($_POST['packate_stock'][$i]));
                     $serve_for = ($stock == 0 || $stock <= 0) ? 'Sold Out' : $db->escapeString($fn->xss_clean($_POST['packate_serve_for'][$i]));
                     $data = array(
-                        'type' => $db->escapeString($fn->xss_clean($_POST['type'])),
+                        'type' => "packet",
                         'measurement' => $db->escapeString($fn->xss_clean($_POST['packate_measurement'][$i])),
                         'measurement_unit_id' => $db->escapeString($fn->xss_clean($_POST['packate_measurement_unit_id'][$i])),
                         'price' => $db->escapeString($fn->xss_clean($_POST['packate_price'][$i])),
@@ -193,7 +193,8 @@ if (isset($_POST['btnEdit'])) {
 
                     $db->update('product_variant', $data, 'id=' . $fn->xss_clean($_POST['product_variant_id'][$i]));
                     $res = $db->getResult();
-                } else if ($_POST['type'] == "loose") {
+//                }
+                /*else if ($_POST['type'] == "loose") {
                     $stock = $db->escapeString($fn->xss_clean($_POST['loose_stock']));
                     $serve_for = ($stock == 0 || $stock <= 0) ? 'Sold Out' : $db->escapeString($fn->xss_clean($_POST['serve_for']));
                     $data = array(
@@ -208,7 +209,7 @@ if (isset($_POST['btnEdit'])) {
                     );
                     $db->update('product_variant', $data, 'id=' . $fn->xss_clean($_POST['product_variant_id'][$i]));
                     $res = $db->getResult();
-                }
+                }*/
             }
             if (
                 isset($_POST['insert_packate_measurement']) && isset($_POST['insert_packate_measurement_unit_id'])
@@ -221,7 +222,7 @@ if (isset($_POST['btnEdit'])) {
                     $serve_for = ($stock == 0 || $stock <= 0) ? 'Sold Out' : $db->escapeString($fn->xss_clean($_POST['insert_packate_serve_for'][$i]));
                     $data = array(
                         "product_id" => $db->escapeString($ID),
-                        "type" => $db->escapeString($fn->xss_clean($_POST['type'])),
+                        "type" => "packet",
                         "measurement" => $db->escapeString($fn->xss_clean($_POST['insert_packate_measurement'][$i])),
                         "measurement_unit_id" => $db->escapeString($fn->xss_clean($_POST['insert_packate_measurement_unit_id'][$i])),
                         "price" => $db->escapeString($fn->xss_clean($_POST['insert_packate_price'][$i])),
@@ -243,7 +244,7 @@ if (isset($_POST['btnEdit'])) {
                 for ($i = 0; $i < count($insert_loose_measurement); $i++) {
                     $data = array(
                         "product_id" => $db->escapeString($ID),
-                        "type" => $db->escapeString($fn->xss_clean($_POST['type'])),
+                        "type" => "packet",
                         "measurement" => $db->escapeString($fn->xss_clean($_POST['insert_loose_measurement'][$i])),
                         "measurement_unit_id" => $db->escapeString($fn->xss_clean($_POST['insert_loose_measurement_unit_id'][$i])),
                         "price" => $db->escapeString($fn->xss_clean($_POST['insert_loose_price'][$i])),
