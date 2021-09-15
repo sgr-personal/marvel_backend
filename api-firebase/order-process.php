@@ -62,6 +62,7 @@ if (isset($_POST['place_order']) && isset($_POST['user_id']) && !empty($_POST['p
     $wallet_balance = (isset($_POST['wallet_balance']) && is_numeric($_POST['wallet_balance'])) ? $db->escapeString($function->xss_clean($_POST['wallet_balance'])) : 0;
     $final_total = $db->escapeString($function->xss_clean($_POST['final_total']));
     $payment_method = $db->escapeString($function->xss_clean($_POST['payment_method']));
+    $address_id = $db->escapeString($function->xss_clean($_POST['address_id']));
     $address = $db->escapeString($function->xss_clean($_POST['address']));
     $delivery_time = (isset($_POST['delivery_time'])) ? $db->escapeString($function->xss_clean($_POST['delivery_time'])) : "";
     $latitude = $db->escapeString($function->xss_clean($_POST['latitude']));
@@ -118,6 +119,7 @@ if (isset($_POST['place_order']) && isset($_POST['user_id']) && !empty($_POST['p
         'tax_amount' => $tax_amount,
         'final_total' => $final_total,
         'payment_method' => $payment_method,
+        'address_id' => $address_id,
         'address' => $address,
         'delivery_time' => $delivery_time,
         'status' => $db->escapeString(json_encode($status)),
@@ -132,7 +134,7 @@ if (isset($_POST['place_order']) && isset($_POST['user_id']) && !empty($_POST['p
     );
     $walletvalue = ($wallet_used) ? $wallet_balance : 0;
     $order_status = $db->escapeString(json_encode($status));
-    $sql = "INSERT INTO `orders`(`user_id`,`otp`,  `mobile`,`order_note`, `total`, `delivery_charge`, `tax_amount`, `tax_percentage`, `wallet_balance`, `discount`, `promo_code`, `promo_discount`, `final_total`, `payment_method`, `address`, `latitude`, `longitude`, `delivery_time`, `status`, `active_status`,`order_from`) VALUES ('$user_id','$otp_number','$mobile','$order_note','$total','$delivery_charge','$tax_amount','$tax_percentage','$walletvalue','$discount','$promo_code','$promo_discount','$final_total','$payment_method','$address','$latitude','$longitude','$delivery_time','$order_status','$active_status','$order_from')";
+    $sql = "INSERT INTO `orders`(`user_id`,`otp`,  `mobile`,`order_note`, `total`, `delivery_charge`, `tax_amount`, `tax_percentage`, `wallet_balance`, `discount`, `promo_code`, `promo_discount`, `final_total`, `payment_method`, `address_id`, `address`, `latitude`, `longitude`, `delivery_time`, `status`, `active_status`,`order_from`) VALUES ('$user_id','$otp_number','$mobile','$order_note','$total','$delivery_charge','$tax_amount','$tax_percentage','$walletvalue','$discount','$promo_code','$promo_discount','$final_total','$payment_method','$address_id',$address','$latitude','$longitude','$delivery_time','$order_status','$active_status','$order_from')";
     $db->sql($sql);
     $sql = "SELECT id FROM orders where user_id=$user_id and active_status = '$active_status' order by id desc limit 1";
     $db->sql($sql);
@@ -160,7 +162,7 @@ if (isset($_POST['place_order']) && isset($_POST['user_id']) && !empty($_POST['p
         $quantity = $quantity_arr[$i];
         $tax_title = $item_details[$i]['tax_title'];
         $tax_percentage = $item_details[$i]['tax_percentage'];
-        $tax_amt = $discounted_price != 0 ? (($tax_percentage / 100) * $discounted_price)  : (($tax_percentage / 100) * $price);
+        $tax_amt = $discounted_price != 0 ? (($tax_percentage / 100) * $discounted_price) : (($tax_percentage / 100) * $price);
         $sub_total = $discounted_price != 0 ? ($discounted_price + ($tax_percentage / 100) * $discounted_price) * $quantity : ($price + ($tax_percentage / 100) * $price) * $quantity;
 
         $data = array(
@@ -178,15 +180,15 @@ if (isset($_POST['place_order']) && isset($_POST['user_id']) && !empty($_POST['p
             'active_status' => $active_status
 
         );
-        $neworder_id         = $db->escapeString($order_id);
+        $neworder_id = $db->escapeString($order_id);
         $product_variant_id = $db->escapeString($product_variant_id);
-        $quantity             = $db->escapeString($quantity);
-        $order_price        = $db->escapeString($price);
-        $discounteds_price    = $db->escapeString($discounted_price);
+        $quantity = $db->escapeString($quantity);
+        $order_price = $db->escapeString($price);
+        $discounteds_price = $db->escapeString($discounted_price);
         $tax_amount = $db->escapeString($tax_amt);
         $tax_percentage = (empty($tax_percentage) || $tax_percentage == "") ? 0 : $db->escapeString($tax_percentage);
-        $order_sub_total    = $db->escapeString($sub_total);
-        $order_item_status  = $db->escapeString(json_encode($status));
+        $order_sub_total = $db->escapeString($sub_total);
+        $order_item_status = $db->escapeString(json_encode($status));
         $sql = "INSERT INTO `order_items`(`user_id`, `order_id`, `product_variant_id`, `quantity`, `price`, `discounted_price`,`tax_amount`,`tax_percentage`, `discount`, `sub_total`, `status`, `active_status`) VALUES ('$user_id','$neworder_id','$product_variant_id','$quantity','$order_price','$discounteds_price','$tax_amount', $tax_percentage ,'$discount','$order_sub_total','$order_item_status','$active_status')";
         $db->sql($sql);
         $res = $db->getResult();
@@ -265,7 +267,7 @@ if (isset($_POST['place_order']) && isset($_POST['user_id']) && !empty($_POST['p
                 $quantity = $quantity_arr[$i];
                 $price = $item_details[$i]['discounted_price'] == 0 ? $item_details[$i]['price'] : $item_details[$i]['discounted_price'];
                 $message .= "<b>Name : </b>" . $item_details[$i]['name'] . "<b> Unit :</b>" . $item_details[$i]['measurement'] . " " . $item_details[$i]['measurement_unit_name'] . "<b> QTY :</b>" . $quantity . "<b> Subtotal :</b>" . $price * $quantity . "<br>";
-                $item_data1[] = array('name' => $item_details[$i]['name'], 'tax_amount' => $tax_amt, 'tax_percentage' => $tax_percentage, 'tax_title' => $item_details[$i]['tax_title'], 'unit' =>  $item_details[$i]['measurement'] . " " . $item_details[$i]['measurement_unit_name'], 'qty' => $quantity, 'subtotal' => ($price * $quantity));
+                $item_data1[] = array('name' => $item_details[$i]['name'], 'tax_amount' => $tax_amt, 'tax_percentage' => $tax_percentage, 'tax_title' => $item_details[$i]['tax_title'], 'unit' => $item_details[$i]['measurement'] . " " . $item_details[$i]['measurement_unit_name'], 'qty' => $quantity, 'subtotal' => ($price * $quantity));
             }
             $message .= "<b>OTP : </b>" . $otp_number . "<b>Total Amount : </b>" . $total . " <b>Delivery Charge : </b>" . $delivery_charge . " <b>Tax Amount : </b>" . $tax_amount . " <b>Discount : </b>" . $discount . " <b>Wallet Used : </b>" . $wallet_balance . " <b>Final Total :</b>" . $final_total;
             $message .= "<br>Payment Method : " . $payment_method;
@@ -333,10 +335,10 @@ if (isset($_POST['get_orders']) && isset($_POST['user_id'])) {
         $db->sql($sql);
         $res[$i]['items'] = $db->getResult();
         $res[$i]['status'] = json_decode($res[$i]['status']);
-        
+
         if (in_array('awaiting_payment', array_column($res[$i]['status'], '0'))) {
             $temp_array = array_column($res[$i]['status'], '0');
-            $index = array_search("awaiting_payment",$temp_array);
+            $index = array_search("awaiting_payment", $temp_array);
             unset($res[$i]['status'][$index]);
             $res[$i]['status'] = array_values($res[$i]['status']);
         }
@@ -346,7 +348,7 @@ if (isset($_POST['get_orders']) && isset($_POST['user_id'])) {
 
             if (in_array('awaiting_payment', array_column($res[$i]['items'][$j]['status'], '0'))) {
                 $temp_array = array_column($res[$i]['items'][$j]['status'], '0');
-                $index = array_search("awaiting_payment",$temp_array);
+                $index = array_search("awaiting_payment", $temp_array);
                 unset($res[$i]['items'][$j]['status'][$index]);
                 $res[$i]['items'][$j]['status'] = array_values($res[$i]['items'][$j]['status']);
             }
@@ -651,7 +653,7 @@ if (isset($_POST['update_order_status']) && isset($_POST['id'])) {
     $res_user = $db->getResult();
     if (!empty($res)) {
         $status = json_decode($res[0]['status']);
-        $user_id =  $res[0]['user_id'];
+        $user_id = $res[0]['user_id'];
         foreach ($status as $each) {
             if (in_array($postStatus, $each)) {
                 $response['error'] = true;
@@ -784,7 +786,7 @@ if (isset($_POST['update_order_status']) && isset($_POST['id'])) {
                             } else {
                                 $bonus_amount = $config['refer-earn-bonus'];
                             }
-                            $sql  = "SELECT name,friends_code FROM users WHERE id=" . $res[0]['user_id'];
+                            $sql = "SELECT name,friends_code FROM users WHERE id=" . $res[0]['user_id'];
                             $db->sql($sql);
                             $res_data = $db->getResult();
 
@@ -880,7 +882,7 @@ if (isset($_POST['update_order_status']) && isset($_POST['id'])) {
 
             for ($i = 0; $i < count($item_details); $i++) {
                 $item_data1[] = array(
-                    'name' => $item_details[$i]['name'], 'tax_amount' => $order_item[$i]['tax_amount'], 'tax_percentage' => $order_item[$i]['tax_percentage'], 'tax_title' => $item_details[$i]['tax_title'], 'unit' =>  $item_details[$i]['measurement'] . " " . $item_details[$i]['measurement_unit_name'],
+                    'name' => $item_details[$i]['name'], 'tax_amount' => $order_item[$i]['tax_amount'], 'tax_percentage' => $order_item[$i]['tax_percentage'], 'tax_title' => $item_details[$i]['tax_title'], 'unit' => $item_details[$i]['measurement'] . " " . $item_details[$i]['measurement_unit_name'],
                     'qty' => $order_item[$i]['quantity'], 'subtotal' => $order_item[$i]['sub_total']
                 );
             }

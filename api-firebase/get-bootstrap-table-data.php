@@ -178,8 +178,11 @@ if (isset($_GET['table']) && $_GET['table'] == 'orders') {
         $tempRow['active_status'] = $active_status;
         $tempRow['wallet_balance'] = $row['wallet_balance'];
         $tempRow['date_added'] = date('d-m-Y', strtotime($row['date_added']));
-        $tempRow['operate'] = '<a href="order-detail.php?id=' . $row['id'] . '"><i class="fa fa-eye"></i> View</a>
-				<br><a href="delete-order.php?id=' . $row['id'] . '"><i class="fa fa-trash"></i> Delete</a>';
+        $ship = '';
+        if ($row['active_status'] == 'received') {
+            $ship = '<a class="ship-order" onclick="shipOrder(' . $row['id'] . ')" href="#" data-toggle="modal" data-target="#shipOrderModal"><i class="fa fa-ship"></i> Ship</a><br/>';
+        }
+        $tempRow['operate'] = $ship . '<a href="order-detail.php?id=' . $row['id'] . '"><i class="fa fa-eye"></i> View</a><br/><a href="delete-order.php?id=' . $row['id'] . '"><i class="fa fa-trash"></i> Delete</a>';
         $rows[] = $tempRow;
     }
     $bulkData['rows'] = $rows;
@@ -474,12 +477,21 @@ if (isset($_GET['table']) && $_GET['table'] == 'users') {
     $rows = array();
     $tempRow = array();
 
+    $operate = "";
     foreach ($res as $row) {
+        $operate = ' <a class="btn-xs btn-danger" href="delete-customers.php?id=' . $row['id'] . '"><i class="fa fa-trash-o"></i>Delete</a>';
         $tempRow['id'] = $row['id'];
         $tempRow['name'] = $row['name'];
         $path = DOMAIN_URL . 'upload/profile/';
+        $imgPath = "";
+        if (strpos($path . $row['profile'], "google") !== false) {
+            $imgPath = $row['profile'];
+        } else {
+            $imgPath = $path . $row['profile'];
+        }
+
         if (!empty($row['profile'])) {
-            $tempRow['profile'] = "<a data-lightbox='product' href='" . $path . $row['profile'] . "' data-caption='" . $row['name'] . "'><img src='" . $path . $row['profile'] . "' title='" . $row['name'] . "' height='50' /></a>";
+            $tempRow['profile'] = "<a data-lightbox='product' href='" . $imgPath . "' data-caption='" . $row['name'] . "'><img src='" . $imgPath . "' title='" . $row['name'] . "' height='50' /></a>";
         } else {
             $tempRow['profile'] = "<a data-lightbox='product' href='" . $path . "default_user_profile.png' data-caption='" . $row['name'] . "'><img src='" . $path . "default_user_profile.png' title='" . $row['name'] . "' height='50' /></a>";
         }
@@ -502,6 +514,132 @@ if (isset($_GET['table']) && $_GET['table'] == 'users') {
 
         $tempRow['status'] = $row['status'] == 1 ? "<label class='label label-success'>Active</label>" : "<label class='label label-danger'>De-Active</label>";
         $tempRow['created_at'] = $row['created_at'];
+        $tempRow['operate'] = $operate;
+        $rows[] = $tempRow;
+    }
+    $bulkData['rows'] = $rows;
+    print_r(json_encode($bulkData));
+}
+
+// data of 'AGENTS' table goes here
+if (isset($_GET['table']) && $_GET['table'] == 'agents') {
+
+    $offset = 0;
+    $limit = 10;
+    $sort = 'id';
+    $order = 'DESC';
+    $where = ' WHERE is_agent = 1 ';
+    if (isset($_GET['offset']))
+        $offset = $db->escapeString($fn->xss_clean($_GET['offset']));
+    if (isset($_GET['limit']))
+        $limit = $db->escapeString($fn->xss_clean($_GET['limit']));
+
+    if (isset($_GET['sort']))
+        $sort = $db->escapeString($fn->xss_clean($_GET['sort']));
+    if (isset($_GET['order']))
+        $order = $db->escapeString($fn->xss_clean($_GET['order']));
+
+    if (isset($_GET['filter_user']) && $_GET['filter_user'] != '') {
+        $filter_user = $db->escapeString($fn->xss_clean($_GET['filter_user']));
+        $where .= ' u.city=' . $filter_user;
+    }
+    if (isset($_GET['search']) && !empty($_GET['search'])) {
+        $search = $db->escapeString($fn->xss_clean($_GET['search']));
+        if (isset($_GET['filter_user']) && $_GET['filter_user'] != '') {
+            $where .= " and `id` like '%" . $search . "%' OR `name` like '%" . $search . "%' OR `email` like '%" . $search . "%' OR `mobile` like '%" . $search . "%' ";
+        } else {
+            $where .= " `id` like '%" . $search . "%' OR `name` like '%" . $search . "%' OR `email` like '%" . $search . "%' OR `mobile` like '%" . $search . "%'";
+        }
+    }
+    if (isset($_GET['filter_order_status']) && $_GET['filter_order_status'] != '') {
+        $filter_order = $db->escapeString($fn->xss_clean($_GET['filter_order']));
+        if (isset($_GET['search']) and $_GET['search'] != '')
+            $where .= ' and active_status=' . $filter_order;
+        else
+            $where = ' active_status=' . $filter_order;
+    }
+
+    $sql = "SELECT COUNT(id) as total FROM `users` u " . $where;
+    $db->sql($sql);
+    $res = $db->getResult();
+    foreach ($res as $row)
+        $total = $row['total'];
+
+    $sql = "SELECT *,(SELECT name FROM area a WHERE a.id=u.area) as area_name,(SELECT name FROM city c WHERE c.id=u.city) as city_name FROM `users` u " . $where . " ORDER BY `" . $sort . "` " . $order . " LIMIT " . $offset . ", " . $limit;
+    $db->sql($sql);
+    $res = $db->getResult();
+    $bulkData = array();
+    $bulkData['total'] = $total;
+    $rows = array();
+    $tempRow = array();
+
+    foreach ($res as $row) {
+        $operate = ' <a href="edit-agent.php?id=' . $row['id'] . '"><i class="fa fa-edit"></i>Edit</a>';
+        $operate .= ' <a class="btn-xs btn-danger" href="delete-agent.php?id=' . $row['id'] . '"><i class="fa fa-trash-o"></i>Delete</a>';
+
+        $tempRow['id'] = $row['id'];
+        $tempRow['name'] = $row['name'];
+        if (ALLOW_MODIFICATION == 0 && !defined(ALLOW_MODIFICATION)) {
+            $tempRow['email'] = str_repeat("*", strlen($row['email']) - 13) . substr($row['email'], -13);
+            $tempRow['mobile'] = str_repeat("*", strlen($row['mobile']) - 3) . substr($row['mobile'], -3);
+        } else {
+            $tempRow['mobile'] = $row['mobile'];
+            $tempRow['email'] = $row['email'];
+        }
+        $tempRow['commission'] = $row['commission'];
+        $tempRow['status'] = $row['status'] == 1 ? "<label class='label label-success'>Active</label>" : "<label class='label label-danger'>De-Active</label>";
+        $tempRow['operate'] = $operate;
+        $rows[] = $tempRow;
+    }
+    $bulkData['rows'] = $rows;
+    print_r(json_encode($bulkData));
+}
+
+// data of 'PROFESSION' table goes here
+if (isset($_GET['table']) && $_GET['table'] == 'profession') {
+
+    $offset = 0;
+    $limit = 10;
+    $sort = 'id';
+    $order = 'DESC';
+    $where = '';
+    if (isset($_GET['offset']))
+        $offset = $db->escapeString($fn->xss_clean($_GET['offset']));
+    if (isset($_GET['limit']))
+        $limit = $db->escapeString($fn->xss_clean($_GET['limit']));
+
+    if (isset($_GET['sort']))
+        $sort = $db->escapeString($fn->xss_clean($_GET['sort']));
+    if (isset($_GET['order']))
+        $order = $db->escapeString($fn->xss_clean($_GET['order']));
+
+    if (isset($_GET['search']) && !empty($_GET['search'])) {
+        $search = $db->escapeString($fn->xss_clean($_GET['search']));
+        $where .= " `name` like '%" . $search . "%' ";
+    }
+
+    $sql = "SELECT COUNT(id) as total FROM `profession` " . $where;
+    $db->sql($sql);
+    $res = $db->getResult();
+    foreach ($res as $row)
+        $total = $row['total'];
+
+    $sql = "SELECT * FROM `profession` " . $where . " ORDER BY `" . $sort . "` " . $order . " LIMIT " . $offset . ", " . $limit;
+    $db->sql($sql);
+    $res = $db->getResult();
+    $bulkData = array();
+    $bulkData['total'] = $total;
+    $rows = array();
+    $tempRow = array();
+
+    foreach ($res as $row) {
+        $operate = ' <a href="edit-profession.php?id=' . $row['id'] . '"><i class="fa fa-edit"></i>Edit</a>';
+        $operate .= ' <a class="btn-xs btn-danger" href="delete-profession.php?id=' . $row['id'] . '"><i class="fa fa-trash-o"></i>Delete</a>';
+
+        $tempRow['id'] = $row['id'];
+        $tempRow['name'] = $row['name'];
+        $tempRow['priority'] = $row['priority'];
+        $tempRow['operate'] = $operate;
         $rows[] = $tempRow;
     }
     $bulkData['rows'] = $rows;
@@ -725,6 +863,7 @@ function formatBytes($size, $precision = 2)
 
     return round(pow(1024, $base - floor($base)), $precision) . ' ' . $suffixes[floor($base)];
 }
+
 if (isset($_GET['table']) && $_GET['table'] == 'media') {
 
     $offset = 0;
@@ -760,15 +899,15 @@ if (isset($_GET['table']) && $_GET['table'] == 'media') {
         $operate = " <a class='btn btn-xs btn-danger delete_media' data-id='" . $row['id'] . "' data-image='" . $row['sub_directory'] . '/' . $row['name'] . "'title='Delete'><i class='fa fa-trash-o'></i>Delete</a>";
 
         $tempRow['id'] = $row['id'];
-        if(!empty($row['sub_directory'] . '/' . $row['name'] && $row['type'] == 'image')) {
+        if (!empty($row['sub_directory'] . '/' . $row['name'] && $row['type'] == 'image')) {
             $tempRow['image'] = "<img src='" . $row['sub_directory'] . '/' . $row['name'] . "' width='60' height: 60px; />";
-        } else if(!empty($row['sub_directory'] . '/' . $row['name'] && $row['type'] == 'video')){
+        } else if (!empty($row['sub_directory'] . '/' . $row['name'] && $row['type'] == 'video')) {
             $tempRow['image'] = "<img src='./images/video-file.png' width='60' height: 60px; />";
-        } else if(!empty($row['sub_directory'] . '/' . $row['name'] && $row['type'] == 'document')){
+        } else if (!empty($row['sub_directory'] . '/' . $row['name'] && $row['type'] == 'document')) {
             $tempRow['image'] = "<img src='./images/doc-file.png' width='60' height: 60px; />";
-        } else if(!empty($row['sub_directory'] . '/' . $row['name'] && $row['type'] == 'spreadsheet')){
+        } else if (!empty($row['sub_directory'] . '/' . $row['name'] && $row['type'] == 'spreadsheet')) {
             $tempRow['image'] = "<img src='./images/xls-file.png' width='60' height: 60px; />";
-        } else if(!empty($row['sub_directory'] . '/' . $row['name'] && $row['type'] == 'archive')) {
+        } else if (!empty($row['sub_directory'] . '/' . $row['name'] && $row['type'] == 'archive')) {
             $tempRow['image'] = "<img src='./images/zip-file.png' width='60' height: 60px; />";
         } else {
             $tempRow['image'] = "<img src='./images/audio-file.png' width='60' height: 60px; />";
@@ -891,9 +1030,9 @@ if (isset($_GET['table']) && $_GET['table'] == 'seller_request') {
         if ($row['status'] == 0) {
             $tempRow['status'] = "<span class='label label-warning'>Pending</span>";
         } elseif ($row['status'] == 1) {
-            $tempRow['status'] =  "<span class='label label-success'>Accepted</span>";
+            $tempRow['status'] = "<span class='label label-success'>Accepted</span>";
         } else {
-            $tempRow['status'] =  "<span class='label label-danger'>Denied</span>";
+            $tempRow['status'] = "<span class='label label-danger'>Denied</span>";
         }
         $tempRow['date_created'] = $row['date_created'];
         $tempRow['operate'] = $operate;
@@ -1894,6 +2033,167 @@ if (isset($_GET['table']) && $_GET['table'] == 'product_sales_report') {
         // sub total = subtotal - (tax_amount * qty)
         // $total_price = $row['sub_total'] - ($row['tax_amount'] * $row['quantity']);
         // $tempRow['total_price'] = $currency.' '.number_format($total_price);
+        $rows[] = $tempRow;
+    }
+    $bulkData['rows'] = $rows;
+    print_r(json_encode($bulkData));
+}
+
+// data of 'CUSTOM PRODUCT CATEGORY' table goes here
+if (isset($_GET['table']) && $_GET['table'] == 'custom_category') {
+    $offset = 0;
+    $limit = 10;
+    $sort = 'id';
+    $order = 'DESC';
+    $where = '';
+    if (isset($_GET['offset']))
+        $offset = $db->escapeString($fn->xss_clean($_GET['offset']));
+    if (isset($_GET['limit']))
+        $limit = $db->escapeString($fn->xss_clean($_GET['limit']));
+
+    if (isset($_GET['sort']))
+        $sort = $db->escapeString($fn->xss_clean($_GET['sort']));
+    if (isset($_GET['order']))
+        $order = $db->escapeString($fn->xss_clean($_GET['order']));
+
+    if (isset($_GET['search']) && !empty($_GET['search'])) {
+        $search = $db->escapeString($fn->xss_clean($_GET['search']));
+        $where .= " Where `name` like '%" . $search . "%'";
+    }
+
+    $sql = "SELECT COUNT(`id`) as total FROM `custom_product_category` " . $where;
+    $db->sql($sql);
+    $res = $db->getResult();
+    foreach ($res as $row)
+        $total = $row['total'];
+
+    $sql = "SELECT * FROM `custom_product_category` " . $where . " ORDER BY " . $sort . " " . $order . " LIMIT " . $offset . ", " . $limit;
+    $db->sql($sql);
+    $res = $db->getResult();
+
+    $bulkData = array();
+    $bulkData['total'] = $total;
+    $rows = array();
+    $tempRow = array();
+
+    foreach ($res as $row) {
+        $operate = "";
+        $operate .= ' <a href="edit_custom_product_category.php?id=' . $row['id'] . '"><i class="fa fa-edit"></i>Edit</a>';
+        $operate .= ' <a class="btn-xs btn-danger" href="delete_custom_product_category.php?id=' . $row['id'] . '"><i class="fa fa-trash-o"></i>Delete</a>';
+
+        $tempRow['id'] = $row['id'];
+        $tempRow['name'] = $row['name'];
+        $tempRow['operate'] = $operate;
+        $rows[] = $tempRow;
+    }
+    $bulkData['rows'] = $rows;
+    print_r(json_encode($bulkData));
+}
+
+// data of 'CUSTOM PRODUCT' table goes here
+if (isset($_GET['table']) && $_GET['table'] == 'custom_product') {
+    $offset = 0;
+    $limit = 10;
+    $sort = 'id';
+    $order = 'DESC';
+    $where = '';
+    if (isset($_GET['offset']))
+        $offset = $db->escapeString($fn->xss_clean($_GET['offset']));
+    if (isset($_GET['limit']))
+        $limit = $db->escapeString($fn->xss_clean($_GET['limit']));
+
+    if (isset($_GET['sort']))
+        $sort = $db->escapeString($fn->xss_clean($_GET['sort']));
+    if (isset($_GET['order']))
+        $order = $db->escapeString($fn->xss_clean($_GET['order']));
+
+    if (isset($_GET['search']) && !empty($_GET['search'])) {
+        $search = $db->escapeString($fn->xss_clean($_GET['search']));
+        $where .= " Where `name` like '%" . $search . "%' OR `price` like '%" . $search . "%'";
+    }
+
+    $sql = "SELECT COUNT(`id`) as total FROM `custom_product` " . $where;
+    $db->sql($sql);
+    $res = $db->getResult();
+    foreach ($res as $row)
+        $total = $row['total'];
+
+    $sql = "SELECT cp.*,(SELECT name FROM custom_product_category c WHERE c.id=cp.category_id) as category_name FROM `custom_product` cp " . $where . " ORDER BY " . $sort . " " . $order . " LIMIT " . $offset . ", " . $limit;
+    $db->sql($sql);
+    $res = $db->getResult();
+
+    $bulkData = array();
+    $bulkData['total'] = $total;
+    $rows = array();
+    $tempRow = array();
+
+    foreach ($res as $row) {
+        $operate = "";
+        $operate .= ' <a href="edit_custom_product.php?id=' . $row['id'] . '"><i class="fa fa-edit"></i>Edit</a>';
+        $operate .= ' <a class="btn-xs btn-danger" href="delete_custom_product.php?id=' . $row['id'] . '"><i class="fa fa-trash-o"></i>Delete</a>';
+
+        $tempRow['id'] = $row['id'];
+        $tempRow['category_name'] = $row['category_name'];
+        $tempRow['name'] = $row['name'];
+        $tempRow['price'] = $row['price'];
+        $tempRow['operate'] = $operate;
+        $rows[] = $tempRow;
+    }
+    $bulkData['rows'] = $rows;
+    print_r(json_encode($bulkData));
+}
+
+// data of 'CUSTOM PRODUCT Query' table goes here
+if (isset($_GET['table']) && $_GET['table'] == 'custom_product_query') {
+    $offset = 0;
+    $limit = 10;
+    $sort = 'id';
+    $order = 'DESC';
+    $where = '';
+    if (isset($_GET['offset']))
+        $offset = $db->escapeString($fn->xss_clean($_GET['offset']));
+    if (isset($_GET['limit']))
+        $limit = $db->escapeString($fn->xss_clean($_GET['limit']));
+
+    if (isset($_GET['sort']))
+        $sort = $db->escapeString($fn->xss_clean($_GET['sort']));
+    if (isset($_GET['order']))
+        $order = $db->escapeString($fn->xss_clean($_GET['order']));
+
+    if (isset($_GET['search']) && !empty($_GET['search'])) {
+        $search = $db->escapeString($fn->xss_clean($_GET['search']));
+        $where .= " Where `person` like '%" . $search . "%' OR `email` like '%" . $search . "%' OR `price` like '%" . $search . "%'";
+    }
+
+    $sql = "SELECT COUNT(`id`) as total FROM `custom_product_query` " . $where;
+    $db->sql($sql);
+    $res = $db->getResult();
+    foreach ($res as $row)
+        $total = $row['total'];
+
+    $sql = "SELECT * FROM `custom_product_query` " . $where . " ORDER BY " . $sort . " " . $order . " LIMIT " . $offset . ", " . $limit;
+    $db->sql($sql);
+    $res = $db->getResult();
+
+    $bulkData = array();
+    $bulkData['total'] = $total;
+    $rows = array();
+    $tempRow = array();
+
+    foreach ($res as $row) {
+        $sql = "SELECT GROUP_CONCAT(name) as products FROM `custom_product` WHERE id IN (" . $row['product_ids'] . ") ";
+        $db->sql($sql);
+        $custProd = $db->getResult();
+
+        $operate = "";
+        $operate .= ' <a href="http://127.0.0.1:8000/quotation/' . $row['id'] . '"><i class="fa fa-eye"></i> View Pdf</a>';
+
+        $tempRow['id'] = $row['id'];
+        $tempRow['name'] = $row['person'];
+        $tempRow['email'] = $row['email'];
+        $tempRow['phone'] = $row['phone'];
+        $tempRow['products'] = str_replace(",", "<br />", $custProd['0']['products']);
+        $tempRow['operate'] = $operate;
         $rows[] = $tempRow;
     }
     $bulkData['rows'] = $rows;

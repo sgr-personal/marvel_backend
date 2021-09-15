@@ -33,6 +33,7 @@ function checkadmin($auth_username)
         return false;
     }
 }
+
 if (ALLOW_MODIFICATION == 0 && !defined(ALLOW_MODIFICATION)) {
     echo '<label class="alert alert-danger">This operation is not allowed in demo panel!.</label>';
     return false;
@@ -312,23 +313,23 @@ if (isset($_POST['front_end_settings']) && $_POST['front_end_settings'] == 1) {
     } else {
         $_POST['favicon'] = $favicon_old;
     }
-    
+
     if (isset($_FILES['web_logo']) && !empty($_FILES['web_logo']) && $_FILES['web_logo']['error'] == 0 && $_FILES['web_logo']['size'] > 0) {
         $web_logo = $db->escapeString($fn->xss_clean($_FILES['web_logo']['name']));
         $extension = pathinfo($_FILES["web_logo"]["name"])['extension'];
         $mimetype = mime_content_type($_FILES["web_logo"]["tmp_name"]);
-        if (!in_array($mimetype, array('image/jpg','image/jpeg', 'image/gif', 'image/png'))) {
+        if (!in_array($mimetype, array('image/jpg', 'image/jpeg', 'image/gif', 'image/png'))) {
             echo "<p class='alert alert-danger'>Image type must jpg, jpeg, gif, or png!</p>";
             return false;
         }
-        
+
         $target_path = '../dist/img/';
-        if(!empty($fweb_logo_old) && $web_logo_old != ''){
-            unlink($target_path.$web_logo_old);
+        if (!empty($fweb_logo_old) && $web_logo_old != '') {
+            unlink($target_path . $web_logo_old);
         }
         $filename = microtime(true) . '.' . strtolower($extension);
         $full_path = $target_path . "" . $filename;
-      
+
         if (!move_uploaded_file($_FILES["web_logo"]["tmp_name"], $full_path)) {
             echo "<p class='alert alert-danger'>Invalid directory to load Web Logo!</p>";
             return false;
@@ -337,8 +338,8 @@ if (isset($_POST['front_end_settings']) && $_POST['front_end_settings'] == 1) {
     } else {
         $_POST['web_logo'] = $web_logo_old;
     }
-    
-    
+
+
     if (isset($_FILES['screenshots']) && !empty($_FILES['screenshots']) && $_FILES['screenshots']['error'] == 0 && $_FILES['screenshots']['size'] > 0) {
         $screenshots = $db->escapeString($fn->xss_clean($_FILES['screenshots']['name']));
         $extension = pathinfo($_FILES["screenshots"]["name"])['extension'];
@@ -456,7 +457,6 @@ if (isset($_POST['front_end_settings']) && $_POST['front_end_settings'] == 1) {
     //}
     
 }*/
-
 
 
 if (isset($_POST['add_delivery_boy']) && $_POST['add_delivery_boy'] == 1) {
@@ -1329,7 +1329,7 @@ if (isset($_POST['bulk_upload']) && $_POST['bulk_upload'] == 1 && (isset($_POST[
         $error = true;
     }
     $allowed_status = array("received", "processed", "shipped");
-    if ($_FILES["upload_file"]["size"] > 0  && $error == false) {
+    if ($_FILES["upload_file"]["size"] > 0 && $error == false) {
         $file = fopen($filename, "r");
         while (($emapData = fgetcsv($file, 10000, ",")) !== FALSE) {
             if ($count != 0) {
@@ -1424,7 +1424,7 @@ if (isset($_POST['bulk_update']) && $_POST['bulk_update'] == 1 && (isset($_POST[
         $error = true;
     }
     $allowed_status = array("received", "processed", "shipped");
-    if ($_FILES["upload_file"]["size"] > 0  && $error == false) {
+    if ($_FILES["upload_file"]["size"] > 0 && $error == false) {
         $file = fopen($filename, "r");
         while (($emapData = fgetcsv($file, 10000, ",")) !== FALSE) {
             if ($count != 0) {
@@ -1523,7 +1523,7 @@ if (isset($_POST['bulk_upload']) && $_POST['bulk_upload'] == 1 && (isset($_POST[
     if (!in_array($mimetype, array('text/plain'))) {
         $error = true;
     }
-    if ($_FILES["upload_file"]["size"] > 0  && $error == false) {
+    if ($_FILES["upload_file"]["size"] > 0 && $error == false) {
         $file = fopen($filename, "r");
         $emptydata = false;
         $invalid_price = false;
@@ -1641,7 +1641,7 @@ if (isset($_POST['bulk_update']) && $_POST['bulk_update'] == 1 && (isset($_POST[
     if (!in_array($mimetype, array('text/plain'))) {
         $error = true;
     }
-    if ($_FILES["upload_file"]["size"] > 0  && $error == false) {
+    if ($_FILES["upload_file"]["size"] > 0 && $error == false) {
         $file = fopen($filename, "r");
         $emptydata = false;
         $invalid_price = false;
@@ -1789,25 +1789,192 @@ if (isset($_GET['product_status']) && !empty($_GET['product_status']) && isset($
     }
 }
 
-if(isset($_POST['delete_media']) && !empty($_POST['id']) && $_POST['delete_media']==1)
-{
+if (isset($_POST['delete_media']) && !empty($_POST['id']) && $_POST['delete_media'] == 1) {
     if (!checkadmin($auth_username)) {
         echo "<label class='alert alert-danger'>Access denied - You are not authorized to access this page.</label>";
         return false;
     }
-    $id     = $db->escapeString($fn->xss_clean($_POST['id']));
-    $image  = $db->escapeString($fn->xss_clean($_POST['image']));
+    $id = $db->escapeString($fn->xss_clean($_POST['id']));
+    $image = $db->escapeString($fn->xss_clean($_POST['image']));
     // $id = $db->escapeString($_POST['id']);
-    if(!empty($image))
-        unlink('../'.$image);
+    if (!empty($image))
+        unlink('../' . $image);
 
-    $sql = "DELETE FROM `media` WHERE `id`='".$id."'";
+    $sql = "DELETE FROM `media` WHERE `id`='" . $id . "'";
 
-    if($db->sql($sql)){
+    if ($db->sql($sql)) {
         echo 1;
         echo "<p class='alert alert-success'>Media Deleted successfully!</p><br>";
-    }else{
+    } else {
         echo 0;
         echo "<p class='alert alert-success'>Media is not Deleted!</p><br>";
+    }
+}
+if (isset($_POST['ship_order']) && $_POST['ship_order'] == 1) {
+    if (!checkadmin($auth_username)) {
+        echo "<label class='alert alert-danger'>Access denied - You are not authorized to access this page.</label>";
+        return false;
+    }
+
+    $order_id = $db->escapeString($fn->xss_clean($_POST['order_id']));
+    $sql = "select * from `orders` where id=" . $order_id;
+    $db->sql($sql);
+    $order = $db->getResult();
+
+    $sql = "select p.id,p.name,p.manufacturer,p.slug,p.made_in,pv.price,oi.quantity,oi.sub_total,(select short_code from `unit` where id=pv.stock_unit_id) as unit, (select name from category where id=p.category_id) as type from `order_items` oi left join `product_variant` pv on oi.product_variant_id=pv.id left join `products` p on p.id=pv.product_id where order_id=" . $order_id;
+    $db->sql($sql);
+    $items = $db->getResult();
+
+    $sql = "select * from `users` where id=" . $order[0]['user_id'];
+    $db->sql($sql);
+    $customer = $db->getResult();
+
+    $sql = "select ua.*,a.name as area,c.name as city  from `user_addresses` ua left join `area` a on a.id=ua.area_id left join `city` c on c.id=ua.city_id where id=" . $order[0]['address_id'];
+    $db->sql($sql);
+    $address = $db->getResult();
+
+    $item_array = array();
+    foreach ($items as $item) {
+        $item_array[] = [
+            "battery" => 0,
+            "blInsure" => 0,
+            "dutyMoney" => 0,
+            "goodsId" => $item['id'],
+            "goodsMaterial" => $item['slug'],
+            "goodsName" => $item['name'],
+            "goodsNameDialect" => $item['manufacturer'],
+            "goodsQTY" => $item['quantity'],
+            "goodsRemark" => $item['description'],
+            "goodsRule" => "",
+            "goodsType" => "IT02",
+            "goodsUnitPrice" => $item['price'],
+            "goodsValue" => $item['sub_total'],
+            "goodsWeight" => 1,
+            "high" => 1,
+            "length" => 1,
+            "makeCountry" => $item['made_in'],
+            "salePath" => "",
+            "sku" => "abc",
+            "unit" => $item['unit'],
+            "width" => 1
+        ];
+    }
+
+    $order_parameters = [
+        "acceptAddress" => "acceptAddress",
+        "acceptCityCode" => "acceptCityCode",
+        "acceptCityName" => "Nairobi",
+        "acceptCompanyName" => "Marvel Tech",
+        "acceptCountryCode" => "KE",
+        "acceptCountryName" => "KENYA",
+        "acceptDistrictCode" => "acceptDistrictCode",
+        "acceptDistrictName" => "acceptDistrictName",
+        "acceptEmail" => "margaret@marveltechkenya.com",
+        "acceptMobile" => "+254721308538",
+        "acceptName" => "Margaret",
+        "acceptPhone" => "",
+        "acceptPostCode" => "acceptPostCode",
+        "acceptProvinceCode" => "acceptProvinceCode",
+        "acceptProvinceName" => "acceptProvinceName",
+        "codFee" => 0,
+        "customOrderNo" => $order_id,
+        "customerCode" => "2540003",
+        "goodsDesc" => "",
+        "goodsHigh" => $_POST['height'],
+        "goodsLength" => $_POST['length'],
+        "goodsName" => "Marvel tech",
+        "goodsPrice" => $order[0]['final_total'],
+        "goodsQTY" => count($items),
+        "goodsValue" => $order[0]['final_total'],
+        "goodsVolume" => "",
+        "goodsWeight" => $_POST['weight'],
+        "goodsWidth" => $_POST['width'],
+        "insurePrice" => 0,
+        "itemList" => $item_array,
+        "piece" => 1,
+        "remark" => $order[0]['order_note'],
+        "sendAddress" => $address[0]['address'] . ' ' . $address[0]['area'] . ' ' . $address[0]['landmark'],
+        "sendCityCode" => "",
+        "sendCityName" => $address[0]['city'],
+        "sendCompanyName" => "",
+        "sendCountryCode" => "KE",
+        "sendCountryName" => "KENYA",
+        "sendDistrictCode" => "",
+        "sendDistrictName" => "",
+        "sendMail" => $customer[0]['email'],
+        "sendMobile" => $order[0]['mobile'],
+        "sendName" => $customer[0]['name'],
+        "sendPhone" => $address[0]['alternate_mobile'],
+        "sendPostCode" => $address[0]['pincode'],
+        "sendProvinceCode" => "",
+        "sendProvinceName" => $address[0]['state'],
+        "shippingFee" => 0,
+        "deliveryType" => "DE01",
+        "payMethod" => "PA01",
+        "parcelType" => "PT01",
+        "shipType" => "ST01",
+        "transportType" => "TT01",
+        "platformSource" => "csp",
+        "smallCode" => "",
+        "threeSectionsCode" => ""
+    ];
+
+    list($msec, $sec) = explode(' ', microtime());
+    $timestamp = ceil((floatval($msec) + floatval($sec)) * 1000);
+
+    //incoming data are the query parameters. they are in array form.
+    //we need to transform them into json_format
+    $data_in_json_format = json_encode($order_parameters);
+
+    $data = array(
+        "data" => $data_in_json_format,
+        "sign" => md5($timestamp . 'K94dnR9TaYXKBo3N' . $data_in_json_format, false)
+    );
+
+    //turn whole data into json b4 ecryption
+    $data = json_encode($data);
+
+    $ivArray = array(0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF);
+    $iv = null;
+    foreach ($ivArray as $element) {
+        $iv .= CHR($element);
+    }
+    $initilization_vector = $iv;
+
+    $encrypted_data = openssl_encrypt($data, "des-cbc", 'K94dnR9TaYXKBo3N', 0, $initilization_vector);
+
+    $header = array('Content-Type: application/json', 'Content-Length: ' . strlen($encrypted_data));
+    $post_url = 'https://apis.speedaf.com/open-api/express/order/createOrder?timestamp=' . $timestamp . '&appCode=2540001';
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $post_url);    //Set the URl
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);  //Do not verify the HTTPS certificate
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);  //Do not verify HTTPS Host
+    curl_setopt($ch, CURLOPT_HEADER, false);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);    // Get data Return
+    curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);    // When CURLOPT_RETURNTRANSFER is enabled, the data will be obtained and returned
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $encrypted_data);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+
+    $result = json_decode(curl_exec($ch)); //Execution
+    if (curl_errno($ch)) {
+        throw new Exception(curl_error($ch));
+    }
+
+    curl_close($ch);
+    if ($result->success) {
+        $decrypted_data = openssl_decrypt($result->data, "des-cbc", 'K94dnR9TaYXKBo3N', 0, $initilization_vector);
+        $decrypted_data = json_decode($decrypted_data, true);
+        $wayBillNo = $decrypted_data['billCode'];
+
+        $status_order = json_decode($order[0]['status']);
+        $status_order[] = array('processed', date("d-m-Y h:i:sa"));
+        $status_order = $db->escapeString(json_encode($status_order));
+        $sql = "UPDATE orders SET status = '" . $status_order . "', active_status = 'processed', way_bill_no = '$wayBillNo' WHERE id = " . $order[0]['id'];
+        $db->sql($sql);
+        echo "<label class='alert alert-success'>Shipping order processed successfully.</label>";
+    } else {
+        echo "<label class='alert alert-danger'>Some Error Occurred! Please Try Later.</label>";
     }
 }
