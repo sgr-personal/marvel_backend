@@ -51,6 +51,7 @@
                                     <th data-field="city" data-sortable="true" data-visible="false">City</th>
                                     <th data-field="status" data-sortable="true">Status</th>
                                     <th data-field="created_at" data-sortable="true">Date & Time</th>
+                                    <th data-field="operate" data-sortable="true">Action</th>
                                 </tr>
                             </thead>
                         </table>

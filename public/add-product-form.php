@@ -1,7 +1,4 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 include_once('includes/functions.php');
 date_default_timezone_set('Asia/Kolkata');
 $function = new functions;
@@ -16,9 +13,10 @@ $sql_query = "SELECT value FROM settings WHERE variable = 'Currency'";
 $db->sql($sql_query);
 
 $res_cur = $db->getResult();
-//echo '<pre/>';
-//print_r($_POST);
-//exit;
+
+$db->sql("SELECT id, name FROM profession ORDER BY id ASC");
+$professions = $db->getResult();
+
 if (isset($_POST['btnAdd'])) {
     if (ALLOW_MODIFICATION == 0 && !defined(ALLOW_MODIFICATION)) {
         echo '<label class="alert alert-danger">This operation is not allowed in demo panel!.</label>';
@@ -26,14 +24,16 @@ if (isset($_POST['btnAdd'])) {
     }
     if ($permissions['products']['create'] == 1) {
         $name = $db->escapeString($fn->xss_clean($_POST['name']));
+        $profession_id = implode(",", $_POST['profession_id']);
         $tax_id = (isset($_POST['tax_id']) && $_POST['tax_id'] != '') ? $db->escapeString($fn->xss_clean($_POST['tax_id'])) : 0;
         $slug = $function->slugify($db->escapeString($fn->xss_clean($_POST['name'])));
         $category_id = $db->escapeString($fn->xss_clean($_POST['category_id']));
         $subcategory_id = (isset($_POST['subcategory_id']) && $_POST['subcategory_id'] != '') ? $db->escapeString($fn->xss_clean($_POST['subcategory_id'])) : 0;
-//        $serve_for = $db->escapeString($fn->xss_clean($_POST['packate_serve_for']));
+        $serve_for = !empty($_POST['packate_serve_for']) ? $_POST['packate_serve_for'][0] : "Available";
         $description = $db->escapeString($fn->xss_clean($_POST['description']));
         $manufacturer = (isset($_POST['manufacturer']) && $_POST['manufacturer'] != '') ? $db->escapeString($fn->xss_clean($_POST['manufacturer'])) : '';
         $made_in = (isset($_POST['made_in']) && $_POST['made_in'] != '') ? $db->escapeString($fn->xss_clean($_POST['made_in'])) : '';
+        $commission = (isset($_POST['commission']) && $_POST['commission'] != '') ? $db->escapeString($fn->xss_clean($_POST['commission'])) : '';
         $indicator = (isset($_POST['indicator']) && $_POST['indicator'] != '') ? $db->escapeString($fn->xss_clean($_POST['indicator'])) : '0';
         $return_status = (isset($_POST['return_status']) && $_POST['return_status'] != '') ? $db->escapeString($fn->xss_clean($_POST['return_status'])) : '0';
         $cancelable_status = (isset($_POST['cancelable_status']) && $_POST['cancelable_status'] != '') ? $db->escapeString($fn->xss_clean($_POST['cancelable_status'])) : '0';
@@ -96,7 +96,8 @@ if (isset($_POST['btnAdd'])) {
             }
         }
 
-        if (!empty($name) && !empty($category_id) && empty($error['other_images']) && empty($error['image']) && empty($error['cancelable']) && !empty($description)) {
+        if (!empty($name) && !empty($category_id) && !empty($serve_for) && empty($error['other_images']) && empty($error['image']) && empty($error['cancelable']) && !empty($description)) {
+
             // create random image file name
             $string = '0123456789';
             $file = preg_replace("/\s+/", "_", $_FILES['image']['name']);
@@ -125,57 +126,69 @@ if (isset($_POST['btnAdd'])) {
             $upload_image = 'upload/images/' . $image;
 
             // insert new data to product table
-            $sql = "INSERT INTO products (name,tax_id,slug,category_id,subcategory_id,image,other_images,description,indicator,manufacturer,made_in,return_status,cancelable_status, till_status) VALUES('$name','$tax_id','$slug','$category_id','$subcategory_id','$upload_image','$other_images','$description','$indicator','$manufacturer','$made_in','$return_status','$cancelable_status','$till_status')";
-//             echo $sql; exit;
-            $product_result = $db->sql($sql);
-//            $product_result = $db->getResult();
+            $sql = "INSERT INTO products (name,tax_id,slug,category_id,subcategory_id,profession_id,image,other_images,description,indicator,manufacturer,made_in,return_status,cancelable_status, till_status,commission) VALUES('$name','$tax_id','$slug','$category_id','$subcategory_id','$profession_id','$upload_image','$other_images','$description','$indicator','$manufacturer','$made_in','$return_status','$cancelable_status','$till_status','$commission')";
+            // echo $sql;
+            $db->sql($sql);
+            $product_result = $db->getResult();
+            if (!empty($product_result)) {
+                $product_result = 0;
+            } else {
+                $product_result = 1;
+            }
+
             $sql = "SELECT id from products ORDER BY id DESC";
             $db->sql($sql);
             $res_inner = $db->getResult();
-            $product_variant = 0;
             if ($product_result == 1) {
 //                if ($_POST['type'] == 'packet') {
-                $packate_measurement = $db->escapeString($fn->xss_clean($_POST['packate_measurement']));
-                for ($i = 0; $i < count($_POST['packate_measurement']); $i++) {
-                    $product_id = $db->escapeString($res_inner[0]['id']);
-                    $type = 'packet';
-                    $measurement = $db->escapeString($fn->xss_clean($_POST['packate_measurement'][$i]));
-                    $measurement_unit_id = $db->escapeString($fn->xss_clean($_POST['packate_measurement_unit_id'][$i]));
+                    $packate_measurement = $db->escapeString($fn->xss_clean($_POST['packate_measurement']));
+                    for ($i = 0; $i < count($_POST['packate_measurement']); $i++) {
+                        $product_id = $db->escapeString($res_inner[0]['id']);
+                        $type = 'packet';
+                        $measurement = $db->escapeString($fn->xss_clean($_POST['packate_measurement'][$i]));
+                        $measurement_unit_id = $db->escapeString($fn->xss_clean($_POST['packate_measurement_unit_id'][$i]));
 
-                    $price = $db->escapeString($fn->xss_clean($_POST['packate_price'][$i]));
-                    $discounted_price = !empty($_POST['packate_discounted_price'][$i]) ? $db->escapeString($fn->xss_clean($_POST['packate_discounted_price'][$i])) : 0;
-                    $serve_for = $db->escapeString($fn->xss_clean($_POST['packate_serve_for'][$i]));
-                    $stock = $db->escapeString($fn->xss_clean($_POST['packate_stock'][$i]));
-                    $serve_for = ($stock == 0 || $stock <= 0) ? 'Sold Out' : $serve_for;
-                    $stock_unit_id = $db->escapeString($fn->xss_clean($_POST['packate_stock_unit_id'][$i]));
+                        $price = $db->escapeString($fn->xss_clean($_POST['packate_price'][$i]));
+                        $discounted_price = !empty($_POST['packate_discounted_price'][$i]) ? $db->escapeString($fn->xss_clean($_POST['packate_discounted_price'][$i])) : 0;
+                        $serve_for = $db->escapeString($fn->xss_clean($_POST['packate_serve_for'][$i]));
+                        $stock = $db->escapeString($fn->xss_clean($_POST['packate_stock'][$i]));
+                        $serve_for = ($stock == 0 || $stock <= 0)? 'Sold Out':$serve_for ;
+                        $stock_unit_id = $db->escapeString($fn->xss_clean($_POST['packate_stock_unit_id'][$i]));
 
-                    $sql = "INSERT INTO product_variant (product_id,type,measurement,measurement_unit_id,price,discounted_price,serve_for,stock,stock_unit_id) VALUES('$product_id','$type','$measurement','$measurement_unit_id','$price','$discounted_price','$serve_for','$stock','$stock_unit_id')";
-                    $product_variant = $db->sql($sql);
-//                        $product_variant = $db->getResult();
-                }
-//                } elseif ($_POST['type'] == "loose") {
-//                    for ($i = 0; $i < count($_POST['loose_measurement']); $i++) {
-//                        $product_id = $db->escapeString($res_inner[0]['id']);
-//                        $type = $db->escapeString($fn->xss_clean($_POST['type']));
-//                        $measurement = $db->escapeString($fn->xss_clean($_POST['loose_measurement'][$i]));
-//                        $measurement_unit_id = $db->escapeString($fn->xss_clean($_POST['loose_measurement_unit_id'][$i]));
-//                        $price = $db->escapeString($fn->xss_clean($_POST['loose_price'][$i]));
-//                        $discounted_price = !empty($_POST['loose_discounted_price'][$i]) ? $db->escapeString($fn->xss_clean($_POST['loose_discounted_price'][$i])) : 0;
-//                        $serve_for = $db->escapeString($fn->xss_clean($_POST['serve_for']));
-//                        $stock = $db->escapeString($fn->xss_clean($_POST['loose_stock']));
-//                        $serve_for = ($stock == 0 || $stock <= 0) ? 'Sold Out' : $serve_for ;
-//                        $stock_unit_id = $db->escapeString($fn->xss_clean($_POST['loose_stock_unit_id']));
-//
-//                        $sql = "INSERT INTO product_variant (product_id,type,measurement,measurement_unit_id,price,discounted_price,serve_for,stock,stock_unit_id) VALUES('$product_id','$type','$measurement','$measurement_unit_id','$price','$discounted_price','$serve_for','$stock','$stock_unit_id')";
-//                        $db->sql($sql);
-//                        $product_variant = $db->getResult();
-//                    }
-//                    if (!empty($product_variant)) {
-//                        $product_variant = 0;
-//                    } else {
-//                        $product_variant = 1;
-//                    }
+                        $sql = "INSERT INTO product_variant (product_id,type,measurement,measurement_unit_id,price,discounted_price,serve_for,stock,stock_unit_id) VALUES('$product_id','$type','$measurement','$measurement_unit_id','$price','$discounted_price','$serve_for','$stock','$stock_unit_id')";
+                        $db->sql($sql);
+                        $product_variant = $db->getResult();
+                    }
+                    if (!empty($product_variant)) {
+                        $product_variant = 0;
+                    } else {
+                        $product_variant = 1;
+                    }
+
 //                }
+                /*elseif ($_POST['type'] == "loose") {
+                    for ($i = 0; $i < count($_POST['loose_measurement']); $i++) {
+                        $product_id = $db->escapeString($res_inner[0]['id']);
+                        $type = $db->escapeString($fn->xss_clean($_POST['type']));
+                        $measurement = $db->escapeString($fn->xss_clean($_POST['loose_measurement'][$i]));
+                        $measurement_unit_id = $db->escapeString($fn->xss_clean($_POST['loose_measurement_unit_id'][$i]));
+                        $price = $db->escapeString($fn->xss_clean($_POST['loose_price'][$i]));
+                        $discounted_price = !empty($_POST['loose_discounted_price'][$i]) ? $db->escapeString($fn->xss_clean($_POST['loose_discounted_price'][$i])) : 0;
+                        $serve_for = $db->escapeString($fn->xss_clean($_POST['serve_for']));
+                        $stock = $db->escapeString($fn->xss_clean($_POST['loose_stock']));
+                        $serve_for = ($stock == 0 || $stock <= 0) ? 'Sold Out' : $serve_for ;
+                        $stock_unit_id = $db->escapeString($fn->xss_clean($_POST['loose_stock_unit_id']));
+
+                        $sql = "INSERT INTO product_variant (product_id,type,measurement,measurement_unit_id,price,discounted_price,serve_for,stock,stock_unit_id) VALUES('$product_id','$type','$measurement','$measurement_unit_id','$price','$discounted_price','$serve_for','$stock','$stock_unit_id')";
+                        $db->sql($sql);
+                        $product_variant = $db->getResult();
+                    }
+                    if (!empty($product_variant)) {
+                        $product_variant = 0;
+                    } else {
+                        $product_variant = 1;
+                    }
+                }*/
             }
             if ($product_result == 1 && $product_variant == 1) {
                 $error['add_menu'] = "<section class='content-header'>
@@ -225,8 +238,7 @@ if (isset($_POST['btnAdd'])) {
                     <div class="box-body">
                         <div class="row">
                             <div class='col-md-8'>
-                                <label for="exampleInputEmail1">Product Name</label> <i
-                                        class="text-danger asterik">*</i><?php echo isset($error['name']) ? $error['name'] : ''; ?>
+                                <label for="exampleInputEmail1">Product Name</label> <i class="text-danger asterik">*</i><?php echo isset($error['name']) ? $error['name'] : ''; ?>
                                 <input type="text" class="form-control" name="name" required>
                             </div>
                             <?php $db->sql("SET NAMES 'utf8'");
@@ -244,163 +256,151 @@ if (isset($_POST['btnAdd'])) {
                                 </select>
                             </div>
                         </div>
-                        <!--                        <label for="type"><br>Type</label>--><?php //echo isset($error['type']) ? $error['type'] : ''; ?>
-                        <!--                        <div class="form-group">-->
-                        <!--                            <label class="radio-inline"><input type="radio" name="type" id="packate" value="packet" checked>Packet</label>-->
-                        <!--                            <label class="radio-inline"><input type="radio" name="type" id="loose" value="loose">Loose</label>-->
-                        <!--                        </div>-->
+<!--                        <label for="type"><br>Type</label>--><?php //echo isset($error['type']) ? $error['type'] : ''; ?>
+<!--                        <div class="form-group">-->
+<!--                            <label class="radio-inline"><input type="radio" name="type" id="packate" value="packet" checked>Packet</label>-->
+<!--                            <label class="radio-inline"><input type="radio" name="type" id="loose" value="loose">Loose</label>-->
+<!--                        </div>-->
                         <hr>
-                        <!--                        <div id="packate_div">-->
-                        <div class="row">
-                            <div class="col-md-2">
-                                <div class="form-group packate_div">
-                                    <label for="exampleInputEmail1">Variant</label> <i class="text-danger asterik">*</i><input
-                                            type="text" class="form-control" name="packate_measurement[]" required/>
+<!--                        <div id="packate_div">-->
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <div class="form-group packate_div">
+                                        <label for="exampleInputEmail1">Variant</label> <i class="text-danger asterik">*</i><input type="text" class="form-control" name="packate_measurement[]" required />
+                                    </div>
+                                </div>
+                                <div class="col-md-1">
+                                    <div class="form-group packate_div">
+                                        <label for="unit">Unit:</label>
+                                        <select class="form-control" name="packate_measurement_unit_id[]">
+                                            <?php
+                                            foreach ($res_unit as  $row) {
+                                                echo "<option value='" . $row['id'] . "'>" . $row['short_code'] . "</option>";
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group packate_div">
+                                        <label for="price">Price (<?= $settings['currency'] ?>):</label> <i class="text-danger asterik">*</i><input type="number" step="any" min='0' class="form-control" name="packate_price[]" id="packate_price" required  />
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group packate_div">
+                                        <label for="discounted_price">Discounted Price(<?= $settings['currency'] ?>):</label>
+                                        <input type="number" step="any" min='0' class="form-control" name="packate_discounted_price[]" id="discounted_price" />
+                                    </div>
+                                </div>
+                                <div class="col-md-1">
+                                    <div class="form-group packate_div">
+                                        <label for="qty">Stock:</label> <i class="text-danger asterik">*</i>
+                                        <input type="number" step="any"  min="0" class="form-control" name="packate_stock[]" required="" />
+                                    </div>
+                                </div>
+                                <div class="col-md-1">
+                                    <div class="form-group packate_div">
+                                        <label for="unit">Unit:</label>
+                                        <select class="form-control" name="packate_stock_unit_id[]">
+                                            <?php
+                                            foreach ($res_unit as  $row) {
+                                                echo "<option value='" . $row['id'] . "'>" . $row['short_code'] . "</option>";
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group packate_div">
+                                        <label for="qty">Status:</label>
+                                        <select name="packate_serve_for[]" class="form-control" required>
+                                            <option value="Available">Available</option>
+                                            <option value="Sold Out">Sold Out</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-1">
+                                    <label>Variation</label>
+                                    <a id="add_packate_variation" title="Add variation of product" style="cursor: pointer;"><i class="fa fa-plus-square-o fa-2x"></i></a>
                                 </div>
                             </div>
-                            <div class="col-md-1">
-                                <div class="form-group packate_div">
-                                    <label for="unit">Unit:</label>
-                                    <select class="form-control" name="packate_measurement_unit_id[]">
-                                        <?php
-                                        foreach ($res_unit as $row) {
-                                            echo "<option value='" . $row['id'] . "'>" . $row['short_code'] . "</option>";
-                                        }
-                                        ?>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="form-group packate_div">
-                                    <label for="price">Price (<?= $settings['currency'] ?>):</label> <i
-                                            class="text-danger asterik">*</i><input type="number" step="any" min='0'
-                                                                                    class="form-control"
-                                                                                    name="packate_price[]"
-                                                                                    id="packate_price" required/>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="form-group packate_div">
-                                    <label for="discounted_price">Discounted Price(<?= $settings['currency'] ?>
-                                        ):</label>
-                                    <input type="number" step="any" min='0' class="form-control"
-                                           name="packate_discounted_price[]" id="discounted_price"/>
-                                </div>
-                            </div>
-                            <div class="col-md-1">
-                                <div class="form-group packate_div">
-                                    <label for="qty">Stock:</label> <i class="text-danger asterik">*</i>
-                                    <input type="number" step="any" min="0" class="form-control" name="packate_stock[]"
-                                           required=""/>
-                                </div>
-                            </div>
-                            <div class="col-md-1">
-                                <div class="form-group packate_div">
-                                    <label for="unit">Unit:</label>
-                                    <select class="form-control" name="packate_stock_unit_id[]">
-                                        <?php
-                                        foreach ($res_unit as $row) {
-                                            echo "<option value='" . $row['id'] . "'>" . $row['short_code'] . "</option>";
-                                        }
-                                        ?>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="form-group packate_div">
-                                    <label for="qty">Status:</label>
-                                    <select name="packate_serve_for[]" class="form-control" required>
-                                        <option value="Available">Available</option>
-                                        <option value="Sold Out">Sold Out</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-1">
-                                <label>Variation</label>
-                                <a id="add_packate_variation" title="Add variation of product" style="cursor: pointer;"><i
-                                            class="fa fa-plus-square-o fa-2x"></i></a>
-                            </div>
-                        </div>
-                        <!--                        </div>-->
+<!--                        </div>-->
 
 
-                        <!--                        <div id="loose_div" style="display:none;">-->
-                        <!--                            <div class="row">-->
-                        <!--                                <div class="col-md-4">-->
-                        <!--                                    <div class="form-group loose_div">-->
-                        <!--                                        <label for="exampleInputEmail1">Measurement</label> <i class="text-danger asterik">*</i>-->
-                        <!--                                        <input type="number" step="any"  min="0" class="form-control" name="loose_measurement[]" required="">-->
-                        <!--                                    </div>-->
-                        <!--                                </div>-->
-                        <!--                                <div class="col-md-2">-->
-                        <!--                                    <div class="form-group loose_div">-->
-                        <!--                                        <label for="unit">Unit:</label>-->
-                        <!--                                        <select class="form-control" name="loose_measurement_unit_id[]">-->
-                        <!--                                            --><?php
-                        //                                            foreach ($res_unit as  $row) {
-                        //                                                echo "<option value='" . $row['id'] . "'>" . $row['short_code'] . "</option>";
-                        //                                            }
-                        //                                            ?>
-                        <!--                                        </select>-->
-                        <!--                                    </div>-->
-                        <!--                                </div>-->
-                        <!--                                <div class="col-md-3">-->
-                        <!--                                    <div class="form-group loose_div">-->
-                        <!--                                        <label for="price">Price (-->
-                        <? //= $settings['currency'] ?><!--):</label> <i class="text-danger asterik">*</i>-->
-                        <!--                                        <input type="number" step="any" min="0" class="form-control" name="loose_price[]" id="loose_price" required="">-->
-                        <!--                                    </div>-->
-                        <!--                                </div>-->
-                        <!--                                <div class="col-md-2">-->
-                        <!--                                    <div class="form-group loose_div">-->
-                        <!--                                        <label for="discounted_price">Discounted Price(-->
-                        <? //= $settings['currency'] ?><!--):</label>-->
-                        <!--                                        <input type="number" step="any" min="0" class="form-control" name="loose_discounted_price[]" id="discounted_price" />-->
-                        <!--                                    </div>-->
-                        <!--                                </div>-->
-                        <!--                                <div class="col-md-1">-->
-                        <!--                                    <label>Variation</label>-->
-                        <!--                                    <a id="add_loose_variation" title="Add variation of product" style="cursor: pointer;"><i class="fa fa-plus-square-o fa-2x"></i></a>-->
-                        <!--                                </div>-->
-                        <!--                            </div>-->
-                        <!--                        </div>-->
+<!--                        <div id="loose_div" style="display:none;">-->
+<!--                            <div class="row">-->
+<!--                                <div class="col-md-4">-->
+<!--                                    <div class="form-group loose_div">-->
+<!--                                        <label for="exampleInputEmail1">Measurement</label> <i class="text-danger asterik">*</i>-->
+<!--                                        <input type="number" step="any"  min="0" class="form-control" name="loose_measurement[]" required="">-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div class="col-md-2">-->
+<!--                                    <div class="form-group loose_div">-->
+<!--                                        <label for="unit">Unit:</label>-->
+<!--                                        <select class="form-control" name="loose_measurement_unit_id[]">-->
+<!--                                            --><?php
+//                                            foreach ($res_unit as  $row) {
+//                                                echo "<option value='" . $row['id'] . "'>" . $row['short_code'] . "</option>";
+//                                            }
+//                                            ?>
+<!--                                        </select>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div class="col-md-3">-->
+<!--                                    <div class="form-group loose_div">-->
+<!--                                        <label for="price">Price (--><?//= $settings['currency'] ?><!--):</label> <i class="text-danger asterik">*</i>-->
+<!--                                        <input type="number" step="any" min="0" class="form-control" name="loose_price[]" id="loose_price" required="">-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div class="col-md-2">-->
+<!--                                    <div class="form-group loose_div">-->
+<!--                                        <label for="discounted_price">Discounted Price(--><?//= $settings['currency'] ?><!--):</label>-->
+<!--                                        <input type="number" step="any" min="0" class="form-control" name="loose_discounted_price[]" id="discounted_price" />-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div class="col-md-1">-->
+<!--                                    <label>Variation</label>-->
+<!--                                    <a id="add_loose_variation" title="Add variation of product" style="cursor: pointer;"><i class="fa fa-plus-square-o fa-2x"></i></a>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
                         <div id="variations">
                         </div>
                         <hr>
-                        <!--                        <div class="form-group" id="loose_stock_div" style="display:none;">-->
-                        <!--                            <label for="quantity">Stock :</label> <i class="text-danger asterik">*</i>--><?php //echo isset($error['quantity']) ? $error['quantity'] : ''; ?>
-                        <!--                            <input type="number" step="any" min="0" class="form-control" name="loose_stock" required><br>-->
-                        <!--                            <div class="form-group">-->
-                        <!--                                <label for="stock_unit"><br>Unit :</label>--><?php //echo isset($error['stock_unit']) ? $error['stock_unit'] : ''; ?>
-                        <!--                                <select class="form-control" name="loose_stock_unit_id" id="loose_stock_unit_id">-->
-                        <!--                                    --><?php
-                        //                                    foreach ($res_unit as $row) {
-                        //                                        echo "<option value='" . $row['id'] . "'>" . $row['short_code'] . "</option>";
-                        //                                    }
-                        //                                    ?>
-                        <!--                                </select>-->
-                        <!--                            </div>-->
-                        <!--                        </div>-->
-                        <!--                        <div class="form-group" id="packate_server_hide">-->
-                        <!--                            <label for="serve_for">Status :</label>--><?php //echo isset($error['serve_for']) ? $error['serve_for'] : ''; ?>
-                        <!--                            <select name="serve_for" class="form-control" required>-->
-                        <!--                                <option value="Available">Available</option>-->
-                        <!--                                <option value="Sold Out">Sold Out</option>-->
-                        <!--                            </select>-->
-                        <!--                            <br />-->
-                        <!--                        </div>-->
+<!--                        <div class="form-group" id="loose_stock_div" style="display:none;">-->
+<!--                            <label for="quantity">Stock :</label> <i class="text-danger asterik">*</i>--><?php //echo isset($error['quantity']) ? $error['quantity'] : ''; ?>
+<!--                            <input type="number" step="any" min="0" class="form-control" name="loose_stock" required><br>-->
+<!--                            <div class="form-group">-->
+<!--                                <label for="stock_unit"><br>Unit :</label>--><?php //echo isset($error['stock_unit']) ? $error['stock_unit'] : ''; ?>
+<!--                                <select class="form-control" name="loose_stock_unit_id" id="loose_stock_unit_id">-->
+<!--                                    --><?php
+//                                    foreach ($res_unit as $row) {
+//                                        echo "<option value='" . $row['id'] . "'>" . $row['short_code'] . "</option>";
+//                                    }
+//                                    ?>
+<!--                                </select>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                        <div class="form-group" id="packate_server_hide">-->
+<!--                            <label for="serve_for">Status :</label>--><?php //echo isset($error['serve_for']) ? $error['serve_for'] : ''; ?>
+<!--                            <select name="serve_for" class="form-control" required>-->
+<!--                                <option value="Available">Available</option>-->
+<!--                                <option value="Sold Out">Sold Out</option>-->
+<!--                            </select>-->
+<!--                            <br />-->
+<!--                        </div>-->
                         <div class="form-group">
-                            <label for="category_id">Category :</label> <i
-                                    class="text-danger asterik">*</i><?php echo isset($error['category_id']) ? $error['category_id'] : ''; ?>
+                            <label for="category_id">Category :</label> <i class="text-danger asterik">*</i><?php echo isset($error['category_id']) ? $error['category_id'] : ''; ?>
                             <select name="category_id" id="category_id" class="form-control" required>
                                 <option value="">--Select Category--</option>
                                 <?php if ($permissions['categories']['read'] == 1) { ?>
                                     <?php foreach ($res as $row) { ?>
                                         <option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option>
-                                    <?php }
+                                <?php }
                                 } ?>
                             </select>
-                            <br/>
+                            <br />
                         </div>
                         <div class="form-group">
                             <label for="subcategory_id">Sub Category :</label>
@@ -408,14 +408,24 @@ if (isset($_POST['btnAdd'])) {
                                 <option value="">--Select Sub Category--</option>
                             </select>
                         </div>
-                        <!--                        <div class="form-group">-->
-                        <!--                            <label for="">Product Type :</label>-->
-                        <!--                            <select name="indicator" id="indicator" class="form-control">-->
-                        <!--                                <option value="0">--Select Type--</option>-->
-                        <!--                                <option value="1">Veg</option>-->
-                        <!--                                <option value="2">Non Veg</option>-->
-                        <!--                            </select>-->
-                        <!--                        </div>-->
+<!--                        <div class="form-group">-->
+<!--                            <label for="">Product Type :</label>-->
+<!--                            <select name="indicator" id="indicator" class="form-control">-->
+<!--                                <option value="0">--Select Type--</option>-->
+<!--                                <option value="1">Veg</option>-->
+<!--                                <option value="2">Non Veg</option>-->
+<!--                            </select>-->
+<!--                        </div>-->
+                        <div class="form-group">
+                            <label for="profession">Profession :</label> <i class="text-danger asterik">*</i>
+                            <select class="form-control select2" data-toggle="select2"
+                                    name="profession_id[]" id="profession_id" required multiple>
+                                <?php foreach ($professions as $row): ?>
+                                    <option value="<?= $row['id']; ?>"><?= $row['name']; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <br />
+                        </div>
                         <div class="form-group">
                             <label for="">Manufacturer :</label>
                             <input type="text" name="manufacturer" class="form-control">
@@ -423,6 +433,10 @@ if (isset($_POST['btnAdd'])) {
                         <div class="form-group">
                             <label for="">Made In :</label>
                             <input type="text" name="made_in" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="">Agent Commission :</label>
+                            <input type="text" name="commission" class="form-control">
                         </div>
                         <div class="row">
                             <div class="col-md-3">
@@ -441,9 +455,7 @@ if (isset($_POST['btnAdd'])) {
                             </div>
                             <div class="col-md-3" id="till-status" style="display:none">
                                 <div class="form-group">
-                                    <label for="">Till which status? :</label> <i
-                                            class="text-danger asterik">*</i> <?php echo isset($error['cancelable']) ? $error['cancelable'] : ''; ?>
-                                    <br>
+                                    <label for="">Till which status? :</label> <i class="text-danger asterik">*</i> <?php echo isset($error['cancelable']) ? $error['cancelable'] : ''; ?><br>
                                     <select id="till_status" name="till_status" class="form-control">
                                         <option value="">Select</option>
                                         <option value="received">Received</option>
@@ -454,20 +466,15 @@ if (isset($_POST['btnAdd'])) {
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="image">Main Image : <i class="text-danger asterik">*</i>&nbsp;&nbsp;&nbsp;*Please
-                                choose square image of larger than 350px*350px & smaller than
-                                550px*550px.</label><?php echo isset($error['image']) ? $error['image'] : ''; ?>
+                            <label for="image">Main Image : <i class="text-danger asterik">*</i>&nbsp;&nbsp;&nbsp;*Please choose square image of larger than 350px*350px & smaller than 550px*550px.</label><?php echo isset($error['image']) ? $error['image'] : ''; ?>
                             <input type="file" name="image" id="image" required>
                         </div>
                         <div class="form-group">
-                            <label for="other_images">Other Images of the Product: *Please choose square image of larger
-                                than 350px*350px & smaller than
-                                550px*550px.</label><?php echo isset($error['other_images']) ? $error['other_images'] : ''; ?>
+                            <label for="other_images">Other Images of the Product: *Please choose square image of larger than 350px*350px & smaller than 550px*550px.</label><?php echo isset($error['other_images']) ? $error['other_images'] : ''; ?>
                             <input type="file" name="other_images[]" id="other_images" multiple>
                         </div>
                         <div class="form-group">
-                            <label for="description">Description :</label> <i
-                                    class="text-danger asterik">*</i><?php echo isset($error['description']) ? $error['description'] : ''; ?>
+                            <label for="description">Description :</label> <i class="text-danger asterik">*</i><?php echo isset($error['description']) ? $error['description'] : ''; ?>
                             <textarea name="description" id="description" class="form-control" rows="8"></textarea>
                             <script type="text/javascript" src="css/js/ckeditor/ckeditor.js"></script>
                             <script type="text/javascript">
@@ -477,8 +484,8 @@ if (isset($_POST['btnAdd'])) {
                     </div>
                     <!-- /.box-body -->
                     <div class="box-footer">
-                        <input type="submit" class="btn-primary btn" value="Add" name="btnAdd"/>&nbsp;
-                        <input type="reset" class="btn-danger btn" value="Clear" id="btnClear"/>
+                        <input type="submit" class="btn-primary btn" value="Add" name="btnAdd" />&nbsp;
+                        <input type="reset" class="btn-danger btn" value="Clear" id="btnClear" />
                         <!--<div  id="res"></div>-->
                     </div>
                 </form>
@@ -487,13 +494,13 @@ if (isset($_POST['btnAdd'])) {
         </div>
     </div>
 </section>
-<div class="separator"></div>
+<div class="separator"> </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.min.js"></script>
 <script>
     var changeCheckbox = document.querySelector('#return_status_button');
     var init = new Switchery(changeCheckbox);
-    changeCheckbox.onchange = function () {
+    changeCheckbox.onchange = function() {
         if ($(this).is(':checked')) {
             $('#return_status').val(1);
         } else {
@@ -505,7 +512,7 @@ if (isset($_POST['btnAdd'])) {
 <script>
     var changeCheckbox = document.querySelector('#cancelable_button');
     var init = new Switchery(changeCheckbox);
-    changeCheckbox.onchange = function () {
+    changeCheckbox.onchange = function() {
         if ($(this).is(':checked')) {
             $('#cancelable_status').val(1);
             $('#till-status').show();
@@ -525,14 +532,14 @@ if (isset($_POST['btnAdd'])) {
     //     $('#loose_stock_div').children(":input").prop('disabled', true);
     // }
 
-    $.validator.addMethod('lessThanEqual', function (value, element, param) {
+    $.validator.addMethod('lessThanEqual', function(value, element, param) {
         return this.optional(element) || parseInt(value) < parseInt($(param).val());
     }, "Discounted Price should be lesser than Price");
 </script>
 
 <script>
     var num = 2;
-    $('#add_packate_variation').on('click', function () {
+    $('#add_packate_variation').on('click', function() {
         html = '<div class="row"><div class="col-md-2"><div class="form-group"><label for="measurement">Variant</label> <i class="text-danger asterik">*</i>' +
             '<input type="number" class="form-control" name="packate_measurement[]" required="" step="any" min="0"></div></div>' +
             '<div class="col-md-1"><div class="form-group">' +
@@ -552,7 +559,7 @@ if (isset($_POST['btnAdd'])) {
             '<div class="col-md-1"><div class="form-group"><label for="unit">Unit:</label>' +
             '<select class="form-control" name="packate_stock_unit_id[]">' +
             '<?php
-                foreach ($res_unit as $row) {
+                foreach ($res_unit as  $row) {
                     echo "<option value=" . $row['id'] . ">" . $row['short_code'] . "</option>";
                 }
                 ?>' +
@@ -566,13 +573,13 @@ if (isset($_POST['btnAdd'])) {
         $('#add_product_form').validate();
     });
 
-    $('#add_loose_variation').on('click', function () {
+    $('#add_loose_variation').on('click', function() {
         html = '<div class="row"><div class="col-md-4"><div class="form-group"><label for="measurement">Measurement</label> <i class="text-danger asterik">*</i>' +
             '<input type="number" step="any" min="0" class="form-control" name="loose_measurement[]" required=""></div></div>' +
             '<div class="col-md-2"><div class="form-group loose_div">' +
             '<label for="unit">Unit:</label><select class="form-control" name="loose_measurement_unit_id[]">' +
             '<?php
-                foreach ($res_unit as $row) {
+                foreach ($res_unit as  $row) {
                     echo "<option value=" . $row['id'] . ">" . $row['short_code'] . "</option>";
                 }
                 ?>' +
@@ -602,7 +609,7 @@ if (isset($_POST['btnAdd'])) {
                 lessThanEqual: "#price"
             },
             description: {
-                required: function (textarea) {
+                required: function(textarea) {
                     CKEDITOR.instances[textarea.id].updateElement();
                     var editorcontent = textarea.value.replace(/<[^>]*>/gi, '');
                     return editorcontent.length === 0;
@@ -610,24 +617,27 @@ if (isset($_POST['btnAdd'])) {
             }
         }
     });
-    $('#btnClear').on('click', function () {
+    $('#btnClear').on('click', function() {
         for (instance in CKEDITOR.instances) {
             CKEDITOR.instances[instance].setData('');
         }
     });
 </script>
 <script>
-    $(document).on('click', '.remove_variation', function () {
+    $(document).ready(function () {
+        $("#profession_id").select2();
+    });
+    $(document).on('click', '.remove_variation', function() {
         $(this).closest('.row').remove();
     });
 
 
-    $(document).on('change', '#category_id', function () {
+    $(document).on('change', '#category_id', function() {
         $.ajax({
             url: "public/db-operation.php",
             data: "category_id=" + $('#category_id').val() + "&change_category=1",
             method: "POST",
-            success: function (data) {
+            success: function(data) {
                 $('#subcategory_id').html("<option value=''>---Select Subcategory---</option>" + data);
             }
         });

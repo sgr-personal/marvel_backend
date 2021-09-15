@@ -18,7 +18,7 @@ $db = new Database();
 $db->connect();
 date_default_timezone_set('Asia/Kolkata');
 
-/* 
+/*
 get-user-data.php
     accesskey:90336
     get_user_data:1
@@ -62,6 +62,7 @@ if (isset($_POST['get_user_data']) && $_POST['get_user_data'] != '') {
                 $response['friends_code'] = $row['friends_code'];
                 $response['apikey']     = $row['apikey'];
                 $response['status']     = $row['status'];
+                $response['is_agent']     = $row['is_agent'];
                 $response['created_at']     = $row['created_at'];
             }
         } else {

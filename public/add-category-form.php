@@ -15,6 +15,7 @@ if (isset($_POST['btnAdd'])) {
 
 		$category_name = $db->escapeString($fn->xss_clean($_POST['category_name']));
 		$category_subtitle = $db->escapeString($fn->xss_clean($_POST['category_subtitle']));
+        $description = $db->escapeString($fn->xss_clean($_POST['description']));
 
 		// get image info
 		$menu_image = $db->escapeString($fn->xss_clean($_FILES['category_image']['name']));
@@ -59,7 +60,7 @@ if (isset($_POST['btnAdd'])) {
 
 			// insert new data to menu table
 			$upload_image = 'upload/images/' . $menu_image;
-			$sql_query = "INSERT INTO category (name,subtitle, image,web_image)VALUES('$category_name', '$category_subtitle', '$upload_image','')";
+			$sql_query = "INSERT INTO category (name,subtitle, image, web_image, description)VALUES('$category_name', '$category_subtitle', '$upload_image','', '$description')";
 			$db->sql($sql_query);
 			$result = $db->getResult();
 			if (!empty($result)) {
@@ -121,6 +122,14 @@ if (isset($_POST['btnAdd'])) {
                             <input type="checkbox" id="product_rating_btn" class="js-switch" >
                             <input type="hidden" id="product_rating" name="product_rating" >
                         </div>
+                        <div class="form-group">
+                            <label for="description">Description :</label>
+                            <textarea name="description" id="description" class="form-control" rows="8"></textarea>
+                            <script type="text/javascript" src="css/js/ckeditor/ckeditor.js"></script>
+                            <script type="text/javascript">
+                                CKEDITOR.replace('description');
+                            </script>
+                        </div>
                     </div><!-- /.box-body -->
 
                     <div class="box-footer">
@@ -139,7 +148,7 @@ if (isset($_POST['btnAdd'])) {
 
 <div class="separator"> </div>
 <script>
- 
+
  var changeCheckbox = document.querySelector('#product_rating_btn');
     var init = new Switchery(changeCheckbox);
     changeCheckbox.onchange = function() {

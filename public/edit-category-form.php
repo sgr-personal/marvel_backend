@@ -19,6 +19,7 @@ if (isset($_POST['btnEdit'])) {
 
 		$name = $db->escapeString($fn->xss_clean($_POST['name']));
         $subtitle = $db->escapeString($fn->xss_clean($_POST['subtitle']));
+        $description = $db->escapeString($fn->xss_clean($_POST['description']));
 
 		$menu_image = $db->escapeString($fn->xss_clean($_FILES['image']['name']));
 		$image_error = $db->escapeString($fn->xss_clean($_FILES['image']['error']));
@@ -58,14 +59,14 @@ if (isset($_POST['btnEdit'])) {
 				// upload new image
 				$upload = move_uploaded_file($_FILES['image']['tmp_name'], 'upload/images/' . $image);
 				$upload_image = 'upload/images/' . $image;
-				$sql_query = "UPDATE category SET name = ' $name',  subtitle = '$subtitle',image = '$upload_image' WHERE id =  $ID";
+				$sql_query = "UPDATE category SET name = ' $name',  subtitle = '$subtitle',image = '$upload_image', description='$description' WHERE id =  $ID";
 				if ($db->sql($sql_query)) {
 					$db->sql($sql_query);
 					$update_result = $db->getResult();
 				}
 			} else {
 
-				$sql_query = "UPDATE category SET name = '" . $name . "', subtitle = '" . $subtitle . "', image = '" . $res[0]['image'] . "'WHERE id =" . $ID;
+				$sql_query = "UPDATE category SET name = '" . $name . "', subtitle = '" . $subtitle . "', image = '" . $res[0]['image'] . "', description='".$description."' WHERE id =" . $ID;
 				$db->sql($sql_query);
 				$update_result = $db->getResult();
 			}
@@ -137,6 +138,15 @@ if (isset($_POST['btnCancel'])) { ?>
 							<input type="file" name="image" id="image" title="Please choose square image of larger than 350px*350px & smaller than 550px*550px." value="<img src='<?php echo $data['image']; ?>'/>">
 							<p class="help-block"><img src="<?php echo $res[0]['image']; ?>" width="280" height="190" /></p>
 						</div>
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Description :</label>
+                            <textarea name="description" id="description" class="form-control"
+                                      rows="16"><?= $res[0]['description']; ?></textarea>
+                            <script type="text/javascript" src="css/js/ckeditor/ckeditor.js"></script>
+                            <script type="text/javascript">
+                                CKEDITOR.replace('description');
+                            </script>
+                        </div>
 					</div><!-- /.box-body -->
 
 					<div class="box-footer">
@@ -161,7 +171,7 @@ if (isset($_POST['btnCancel'])) { ?>
 	});
 </script>
 <script>
- 
+
  var changeCheckbox = document.querySelector('#product_rating_btn');
     var init = new Switchery(changeCheckbox);
     changeCheckbox.onchange = function() {

@@ -5,16 +5,16 @@
  * @Package Database
  */
 
-define('DOMAIN_URL', 'https://marvel.niktechsolution.com/admin/'); /* chnage to your domain here - don't forget to add forward slash at the end of the URL like this "/" */
+define('DOMAIN_URL', 'http://localhost/marvel_backend/'); /* chnage to your domain here - don't forget to add forward slash at the end of the URL like this "/" */
 define('ALLOW_MODIFICATION', 1);
 define('JWT_SECRET_KEY','abc'); /* chnage to your secret key here set it to anything you like*/
 
 class Database
 {
-    /* 
+    /*
      * Create variables for credentials to MySQL database
      * The variables have been declared as private. This
-     * means that they will only be available with the 
+     * means that they will only be available with the
      * Database class
      */
 
@@ -45,7 +45,7 @@ class Database
                 return true; // Connection has been made return TRUE
             }
         } else {
-            return true; // Connection has already been made return TRUE 
+            return true; // Connection has already been made return TRUE
         }
     }
 

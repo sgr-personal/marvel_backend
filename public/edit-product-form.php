@@ -28,6 +28,10 @@ foreach ($res as $row) {
     $previous_menu_image = $row['image'];
     $other_images = $row['other_images'];
 }
+
+$db->sql("SELECT id, name FROM profession ORDER BY id ASC");
+$professions = $db->getResult();
+
 if (isset($_POST['btnEdit'])) {
     if (ALLOW_MODIFICATION == 0 && !defined(ALLOW_MODIFICATION)) {
         echo '<label class="alert alert-danger">This operation is not allowed in demo panel!.</label>';
@@ -53,7 +57,7 @@ if (isset($_POST['btnEdit'])) {
                 $i++;
             }
         }
-
+        $profession_id = implode(",", $_POST['profession_id']);
         $subcategory_id = (isset($_POST['subcategory_id']) && $_POST['subcategory_id'] != '') ? $db->escapeString($fn->xss_clean($_POST['subcategory_id'])) : 0;
         $category_id = $db->escapeString($fn->xss_clean($_POST['category_id']));
         $serve_for = $db->escapeString($fn->xss_clean($_POST['serve_for']));
@@ -61,6 +65,7 @@ if (isset($_POST['btnEdit'])) {
         $pr_status = $db->escapeString($fn->xss_clean($_POST['pr_status']));
         $manufacturer = (isset($_POST['manufacturer']) && $_POST['manufacturer'] != '') ? $db->escapeString($fn->xss_clean($_POST['manufacturer'])) : '';
         $made_in = (isset($_POST['made_in']) && $_POST['made_in'] != '') ? $db->escapeString($fn->xss_clean($_POST['made_in'])) : '';
+        $commission = (isset($_POST['commission']) && $_POST['commission'] != '') ? $db->escapeString($fn->xss_clean($_POST['commission'])) : '';
         $indicator = (isset($_POST['indicator']) && $_POST['indicator'] != '') ? $db->escapeString($fn->xss_clean($_POST['indicator'])) : '0';
         $return_status = (isset($_POST['return_status']) && $_POST['return_status'] != '') ? $db->escapeString($fn->xss_clean($_POST['return_status'])) : '0';
         $cancelable_status = (isset($_POST['cancelable_status']) && $_POST['cancelable_status'] != '') ? $db->escapeString($fn->xss_clean($_POST['cancelable_status'])) : '0';
@@ -156,12 +161,13 @@ if (isset($_POST['btnEdit'])) {
                 $upload = move_uploaded_file($_FILES['image']['tmp_name'], 'upload/images/' . $image);
 
                 $upload_image = 'upload/images/' . $image;
-                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' , subcategory_id = '$subcategory_id', image = '$upload_image', description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status',`status` = $pr_status WHERE id = $ID";
+                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' , subcategory_id = '$subcategory_id', profession_id = '$profession_id', image = '$upload_image', description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status',`status` = $pr_status,`commission` = $commission WHERE id = $ID";
                 $db->sql($sql_query);
             } else {
-                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' ,category_id = '$category_id' ,subcategory_id = '$subcategory_id' ,description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status' ,`status` = $pr_status WHERE id = $ID";
+                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' ,category_id = '$category_id' ,subcategory_id = '$subcategory_id' , profession_id = '$profession_id', description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status' ,`status` = $pr_status,`commission` = $commission WHERE id = $ID";
                 $db->sql($sql_query);
             }
+
             // echo $sql_query;
             $res = $db->getResult();
             $product_variant_id = $db->escapeString($fn->xss_clean($_POST['product_variant_id']));
@@ -171,11 +177,11 @@ if (isset($_POST['btnEdit'])) {
                 $count = count($_POST['packate_measurement']);
             }
             for ($i = 0; $i < $count; $i++) {
-                if ($_POST['type'] == "packet") {
+//                if ($_POST['type'] == "packet") {
                     $stock = $db->escapeString($fn->xss_clean($_POST['packate_stock'][$i]));
                     $serve_for = ($stock == 0 || $stock <= 0) ? 'Sold Out' : $db->escapeString($fn->xss_clean($_POST['packate_serve_for'][$i]));
                     $data = array(
-                        'type' => $db->escapeString($fn->xss_clean($_POST['type'])),
+                        'type' => "packet",
                         'measurement' => $db->escapeString($fn->xss_clean($_POST['packate_measurement'][$i])),
                         'measurement_unit_id' => $db->escapeString($fn->xss_clean($_POST['packate_measurement_unit_id'][$i])),
                         'price' => $db->escapeString($fn->xss_clean($_POST['packate_price'][$i])),
@@ -187,7 +193,8 @@ if (isset($_POST['btnEdit'])) {
 
                     $db->update('product_variant', $data, 'id=' . $fn->xss_clean($_POST['product_variant_id'][$i]));
                     $res = $db->getResult();
-                } else if ($_POST['type'] == "loose") {
+//                }
+                /*else if ($_POST['type'] == "loose") {
                     $stock = $db->escapeString($fn->xss_clean($_POST['loose_stock']));
                     $serve_for = ($stock == 0 || $stock <= 0) ? 'Sold Out' : $db->escapeString($fn->xss_clean($_POST['serve_for']));
                     $data = array(
@@ -202,7 +209,7 @@ if (isset($_POST['btnEdit'])) {
                     );
                     $db->update('product_variant', $data, 'id=' . $fn->xss_clean($_POST['product_variant_id'][$i]));
                     $res = $db->getResult();
-                }
+                }*/
             }
             if (
                 isset($_POST['insert_packate_measurement']) && isset($_POST['insert_packate_measurement_unit_id'])
@@ -215,7 +222,7 @@ if (isset($_POST['btnEdit'])) {
                     $serve_for = ($stock == 0 || $stock <= 0) ? 'Sold Out' : $db->escapeString($fn->xss_clean($_POST['insert_packate_serve_for'][$i]));
                     $data = array(
                         "product_id" => $db->escapeString($ID),
-                        "type" => $db->escapeString($fn->xss_clean($_POST['type'])),
+                        "type" => "packet",
                         "measurement" => $db->escapeString($fn->xss_clean($_POST['insert_packate_measurement'][$i])),
                         "measurement_unit_id" => $db->escapeString($fn->xss_clean($_POST['insert_packate_measurement_unit_id'][$i])),
                         "price" => $db->escapeString($fn->xss_clean($_POST['insert_packate_price'][$i])),
@@ -237,7 +244,7 @@ if (isset($_POST['btnEdit'])) {
                 for ($i = 0; $i < count($insert_loose_measurement); $i++) {
                     $data = array(
                         "product_id" => $db->escapeString($ID),
-                        "type" => $db->escapeString($fn->xss_clean($_POST['type'])),
+                        "type" => "packet",
                         "measurement" => $db->escapeString($fn->xss_clean($_POST['insert_loose_measurement'][$i])),
                         "measurement_unit_id" => $db->escapeString($fn->xss_clean($_POST['insert_loose_measurement_unit_id'][$i])),
                         "price" => $db->escapeString($fn->xss_clean($_POST['insert_loose_price'][$i])),
@@ -745,7 +752,24 @@ function isJSON($string)
                                             <?php } ?>
                                         </select>
                                     </div>
-                                   <!-- <div class="form-group">
+                                    <div class="form-group">
+                                        <label for="profession_id">Profession :</label> <i class="text-danger asterik">*</i>
+                                        <select class="form-control select2" data-toggle="select2"
+                                                name="profession_id[]" id="profession_id" required multiple>
+                                            <?php foreach ($professions as $row):
+                                                $selected = "";
+                                                if (in_array($row['id'], explode(",", $data['profession_id'])) && $data['profession_id'] != ""):
+                                                    $selected = "selected";
+                                                endif;
+                                                ?>
+                                                    <option value="<?php echo $row['id']; ?>" <?= $selected; ?> >
+                                                        <?php echo $row['name']; ?>
+                                                    </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                        <!--
+                                    <div class="form-group">
                                         <label for="">Product Type :</label>
                                         <select name="indicator" id="indicator" class="form-control">
                                             <option value="">--Select Type--</option>
@@ -766,8 +790,12 @@ function isJSON($string)
                                     </div>
                                     <div class="form-group">
                                         <label for="">Made In :</label>
-                                        <input type="text" name="made_in" value="<?= $res[0]['made_in'] ?>"
+                                        <input type="number" name="made_in" value="<?= $res[0]['made_in'] ?>"
                                                class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="">Agent Commission :</label>
+                                        <input type="text" name="commission" value="<?= $res[0]['commission'] ?>" class="form-control">
                                     </div>
                                     <div class="row">
                                         <div class="col-md-3">
@@ -872,6 +900,9 @@ function isJSON($string)
 </section>
 <div class="separator"></div>
 <script>
+    $(document).ready(function () {
+        $("#profession_id").select2();
+    });
     $(document).on('click', '.delete-image', function () {
         var pid = $(this).data('pid');
         var i = $(this).data('i');
@@ -1011,8 +1042,7 @@ function isJSON($string)
     });
 </script>
 <script>
-
-    $(document).on('click', '.remove_variation', function () {
+    $(document).on('click', '.remove_variation', function() {
         if ($(this).data('id') == 'data_delete') {
             if (confirm('Are you sure? Want to delete this row')) {
                 var id = $(this).closest('div.row').find("input[id='product_variant_id']").val();
