@@ -257,7 +257,16 @@ $res_logo = $db->getResult();
                             <i class="fa fa-bullseye"></i> <span>Sub Categories</span>
                         </a>
                     </li>
-
+                    <li>
+                        <a href="attributes.php">
+                            <i class="fa fa-bullseye"></i> <span>Attributes</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="attribute-values.php">
+                            <i class="fa fa-bullseye"></i> <span>Attribute Value</span>
+                        </a>
+                    </li>
                     <li class="treeview">
                         <a href="#">
                             <i class="fa fa-cubes"></i>
