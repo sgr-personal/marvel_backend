@@ -25,6 +25,7 @@ if (isset($_POST['btnAdd'])) {
 		}
 		$category_subtitle = $db->escapeString($fn->xss_clean($_POST['category_subtitle']));
 		$main_category = $db->escapeString($fn->xss_clean($_POST['main_category_name']));
+		$attribute_ids = empty($_POST['attribute_ids']) ? '' : implode(",", $_POST['attribute_ids']);
 
 		// get image info
 		$menu_image = $db->escapeString($fn->xss_clean($_FILES['category_image']['name']));
@@ -39,6 +40,9 @@ if (isset($_POST['btnAdd'])) {
 		}
 		if (empty($category_subtitle)) {
 			$error['category_subtitle'] = " <span class='label label-danger'>Required!</span>";
+		}
+		if (empty($attribute_ids)) {
+			$error['attribute_ids'] = " <span class='label label-danger'>Required!</span>";
 		}
 
 		// common image file extensions
@@ -57,7 +61,7 @@ if (isset($_POST['btnAdd'])) {
 			}
 		}
 
-		if (!empty($subcategory_name) && !empty($category_subtitle) && empty($error['category_image'])) {
+		if (!empty($subcategory_name) && !empty($category_subtitle) && !empty($attribute_ids) && empty($error['category_image'])) {
 
 			// create random image file name
 			$string = '0123456789';
@@ -70,13 +74,12 @@ if (isset($_POST['btnAdd'])) {
 
 			// insert new data to menu table
 			$upload_image = 'upload/images/' . $menu_image;
-			$sql_query = "INSERT INTO subcategory (category_id, name, slug, subtitle, image)
-						VALUES('$main_category', '$subcategory_name', '$slug', '$category_subtitle', '$upload_image')";
-
+			$sql_query = "INSERT INTO subcategory (category_id, name, slug, subtitle, image, attribute_ids)
+						VALUES('$main_category', '$subcategory_name', '$slug', '$category_subtitle', '$upload_image', '$attribute_ids')";
 
 			// Execute query
 			$db->sql($sql_query);
-			// store result 
+			// store result
 			$result = $db->getResult();
 			if (!empty($result)) {
 				$result = 0;
@@ -99,6 +102,11 @@ if (isset($_POST['btnCancel'])) {
 }
 
 ?>
+<style>
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #4b4b4b !important;
+    }
+</style>
 <section class="content-header">
 	<h1>Add Sub Category<small><a href='subcategories.php'> <i class='fa fa-angle-double-left'></i>&nbsp;&nbsp;&nbsp;Back to Sub Categories</a></small></h1>
 	<?php echo isset($error['add_category']) ? $error['add_category'] : ''; ?>
@@ -149,6 +157,21 @@ if (isset($_POST['btnCancel'])) {
 							<label for="exampleInputFile">Image&nbsp;&nbsp;&nbsp;*Please choose square image of larger than 350px*350px & smaller than 550px*550px.</label><?php echo isset($error['category_image']) ? $error['category_image'] : ''; ?>
 							<input type="file" name="category_image" id="category_image" required />
 						</div>
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Main Category</label>
+                            <select class="form-control select2" data-toggle="select2"
+                                    id="attribute_ids" name="attribute_ids[]" required multiple>
+                                <option value="">--Select Attributes--</option>
+                                <?php
+                                    $sql = "SELECT * FROM attributes WHERE active = 1";
+                                    $db->sql($sql);
+                                    $res = $db->getResult();
+                                    foreach ($res as $attributes) {
+                                        echo "<option value='" . $attributes['id'] . "'>" . $attributes['name'] . "</option>";
+                                    }
+                                ?>
+                            </select>
+                        </div>
 					</div><!-- /.box-body -->
 
 					<div class="box-footer">
@@ -164,5 +187,10 @@ if (isset($_POST['btnCancel'])) {
 </section>
 
 <div class="separator"> </div>
+<script>
+    $(document).ready(function () {
+        $("#attribute_ids").select2();
+    });
+</script>
 
 <?php $db->disconnect(); ?>

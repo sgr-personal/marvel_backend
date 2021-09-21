@@ -34,6 +34,7 @@ if (isset($_POST['btnEdit'])) {
 			}
 		}
 		$subtitle = $db->escapeString($fn->xss_clean($_POST['subtitle']));
+		$attribute_ids = empty($_POST['attribute_ids']) ? '' : implode(",", $_POST['attribute_ids']);
 		$menu_image = $db->escapeString($fn->xss_clean($_FILES['image']['name']));
 		$image_error = $db->escapeString($fn->xss_clean($_FILES['image']['error']));
 		$image_type = $db->escapeString($fn->xss_clean($_FILES['image']['type']));
@@ -48,6 +49,9 @@ if (isset($_POST['btnEdit'])) {
 		}
 		if (empty($subtitle)) {
 			$error['subtitle'] = " <span class='label label-danger'>Required!</span>";
+		}
+		if (empty($attribute_ids)) {
+			$error['attribute_ids'] = " <span class='label label-danger'>Required!</span>";
 		}
 
 		// common image file extensions
@@ -64,7 +68,7 @@ if (isset($_POST['btnEdit'])) {
 			}
 		}
 
-		if (!empty($name) && !empty($subtitle) && empty($error['image'])) {
+		if (!empty($name) && !empty($subtitle) && !empty($attribute_ids) && empty($error['image'])) {
 			if (!empty($menu_image)) {
 				// create random image file name
 				$string = '0123456789';
@@ -78,7 +82,7 @@ if (isset($_POST['btnEdit'])) {
 				// upload new image
 				$upload = move_uploaded_file($_FILES['image']['tmp_name'], 'upload/images/' . $image);
 				$upload_image = 'upload/images/' . $image;
-				$sql_query = "UPDATE subcategory SET category_id='" . $category . "', name = '" . $name . "', slug = '" . $slug . "',  subtitle = '" . $subtitle . "',image = '" . $upload_image . "'
+				$sql_query = "UPDATE subcategory SET category_id='" . $category . "', name = '" . $name . "', slug = '" . $slug . "',  subtitle = '" . $subtitle . "',image = '" . $upload_image . "', attribute_ids = '".$attribute_ids."'
 							WHERE id =" . $ID;
 				$db->sql($sql_query);
 				$update_result = $db->getResult();
@@ -89,9 +93,9 @@ if (isset($_POST['btnEdit'])) {
 				}
 			} else {
 
-				$sql_query = "UPDATE subcategory SET category_id='" . $category . "', name = '" . $name . "', slug = '" . $slug . "', subtitle = '" . $subtitle . "', image = '" . $previous_subcategory_image . "'WHERE id = '" . $ID . "'";
+				$sql_query = "UPDATE subcategory SET category_id='" . $category . "', name = '" . $name . "', slug = '" . $slug . "', subtitle = '" . $subtitle . "', image = '" . $previous_subcategory_image . "', attribute_ids = '".$attribute_ids."' WHERE id = '" . $ID . "'";
 				$db->sql($sql_query);
- 
+
 				$update_result = $db->getResult();
 				if (!empty($update_result)) {
 					$update_result = 0;
@@ -120,6 +124,11 @@ if (isset($_POST['btnCancel'])) { ?>
 		window.location.href = "subcategories.php";
 	</script>
 <?php } ?>
+<style>
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #4b4b4b !important;
+    }
+</style>
 <section class="content-header">
 	<h1>
 		Edit Subcategory <small><a href='subcategories.php'> <i class='fa fa-angle-double-left'></i>&nbsp;&nbsp;&nbsp;Back to Sub Categories</a></small></h1>
@@ -181,6 +190,25 @@ if (isset($_POST['btnCancel'])) { ?>
 							<input type="file" name="image" id="image" title="Please choose square image of larger than 350px*350px & smaller than 550px*550px."  value="<img src='<?php echo $res[0]['image']; ?>'/>">
 							<p class="help-block"><img src="<?php echo $res[0]['image']; ?>" width="280" height="190" /></p>
 						</div>
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Main Category</label>
+                            <select class="form-control select2" data-toggle="select2"
+                                    id="attribute_ids" name="attribute_ids[]" required multiple>
+                                <?php
+                                $sql = "SELECT * FROM attributes WHERE active = 1";
+                                $db->sql($sql);
+                                $attr = $db->getResult();
+                                foreach ($attr as $attributes) {
+                                    $selected = "";
+                                    if (in_array($attributes['id'], explode(",", $res[0]['attribute_ids']))):
+                                        $selected = "selected";
+                                    endif;
+                                    ?>
+                                    <option value="<?= $attributes['id'] ?>" <?= $selected ?> > <?= $attributes['name'] ?> </option>
+                                <?php }
+                                ?>
+                            </select>
+                        </div>
 					</div><!-- /.box-body -->
 
 					<div class="box-footer">
@@ -198,6 +226,9 @@ if (isset($_POST['btnCancel'])) { ?>
 <?php $db->disconnect(); ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.min.js"></script>
 <script>
+    $(document).ready(function () {
+        $("#attribute_ids").select2();
+    });
 	$('#edit_subcategory_form').validate({
 		rules: {
 			category: "required",

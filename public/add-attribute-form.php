@@ -7,7 +7,7 @@ $fn = new custom_functions;
 <?php
 if (isset($_POST['btnAdd'])) {
     $name = $db->escapeString($fn->xss_clean($_POST['name']));
-    $code = $db->escapeString($fn->xss_clean($_POST['code']));
+    $slug = $db->escapeString($fn->xss_clean($_POST['slug']));
 
     // create array variable to handle error
     $error = array();
@@ -15,17 +15,17 @@ if (isset($_POST['btnAdd'])) {
     if (empty($name)) {
         $error['name'] = " <span class='label label-danger'>Required!</span>";
     }
-    if (empty($code)) {
-        $error['code'] = " <span class='label label-danger'>Required!</span>";
+    if (empty($slug)) {
+        $error['slug'] = " <span class='label label-danger'>Required!</span>";
     }
 
-    if (!empty($name) && !empty($code)) {
-        $sql_query = "SELECT * FROM attributes WHERE code = '$code'";
+    if (!empty($name) && !empty($slug)) {
+        $sql_query = "SELECT * FROM attributes WHERE slug = '$slug'";
         $db->sql($sql_query);
         $res_query = $db->getResult();
         if (empty($res_query)) {
-            $sql_query = "INSERT INTO attributes (name, code, active)
-                    VALUES('$name', '$code', 1)";
+            $sql_query = "INSERT INTO attributes (name, slug, active)
+                    VALUES('$name', '$slug', 1)";
 
             // Execute query
             $db->sql($sql_query);
@@ -42,7 +42,7 @@ if (isset($_POST['btnAdd'])) {
                 $error['add_attribute'] = " <span class='label label-danger'>Failed add attribute</span>";
             }
         } else {
-            $error['add_attribute'] = " <span class='label label-danger'>Attribute code already present</span>";
+            $error['add_attribute'] = " <span class='label label-danger'>Attribute slug already present</span>";
         }
     }
 }
@@ -66,7 +66,7 @@ if (isset($_POST['btnCancel'])) {
                 <!-- general form elements -->
                 <div class="box box-primary">
                     <div class="box-header with-border">
-                        <h3 class="box-title">Add Sub Category</h3>
+                        <h3 class="box-title">Add Attribute</h3>
                     </div><!-- /.box-header -->
                     <!-- form start -->
                     <form method="post" enctype="multipart/form-data">
@@ -76,8 +76,8 @@ if (isset($_POST['btnCancel'])) {
                                 <input type="text" class="form-control" name="name" required>
                             </div>
                             <div class="form-group">
-                                <label for="exampleInputEmail1">Code</label><?php echo isset($error['code']) ? $error['code'] : ''; ?>
-                                <input type="text" class="form-control" name="code" required>
+                                <label for="exampleInputEmail1">Slug</label><?php echo isset($error['slug']) ? $error['slug'] : ''; ?>
+                                <input type="text" class="form-control" name="slug" required>
                             </div>
                         </div><!-- /.box-body -->
 

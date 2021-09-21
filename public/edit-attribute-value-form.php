@@ -10,6 +10,7 @@ $ID = (isset($_GET['id'])) ? $db->escapeString($fn->xss_clean($_GET['id'])) : ""
 if (isset($_POST['btnEdit'])) {
     $name = $db->escapeString($fn->xss_clean($_POST['name']));
     $slug = $db->escapeString($fn->xss_clean($_POST['slug']));
+    $attribute_id = $db->escapeString($fn->xss_clean($_POST['attribute_id']));
 
     // create array variable to handle error
     $error = array();
@@ -19,13 +20,16 @@ if (isset($_POST['btnEdit'])) {
     if (empty($slug)) {
         $error['slug'] = " <span class='label label-danger'>Required!</span>";
     }
+    if (empty($attribute_id)) {
+        $error['attribute_id'] = " <span class='label label-danger'>Required!</span>";
+    }
 
-    if (!empty($name) && !empty($slug)) {
-        $sql_query = "SELECT * FROM attributes WHERE slug = '$slug' AND id != $ID";
+    if (!empty($name) && !empty($slug) && !empty($attribute_id)) {
+        $sql_query = "SELECT * FROM attribute_values WHERE slug = '$slug' AND id != $ID";
         $db->sql($sql_query);
         $res_query = $db->getResult();
         if (empty($res_query)) {
-            $sql_query = "UPDATE attributes SET name='" . $name . "', slug = '" . $slug . "' WHERE id = '" . $ID . "'";
+            $sql_query = "UPDATE attribute_values SET name='" . $name . "', slug = '" . $slug . "', attribute_id = '" . $attribute_id . "'  WHERE id = '" . $ID . "'";
             $db->sql($sql_query);
 
             $update_result = $db->getResult();
@@ -36,28 +40,28 @@ if (isset($_POST['btnEdit'])) {
             }
 
             if ($update_result == 1) {
-                $error['update_attribute'] = " <section class='content-header'><span class='label label-success'>Attribute updated Successfully</span></section>";
+                $error['update_attribute'] = " <section class='content-header'><span class='label label-success'>Attribute value updated Successfully</span></section>";
             } else {
-                $error['update_attribute'] = " <span class='label label-danger'>Failed update Attribute</span>";
+                $error['update_attribute'] = " <span class='label label-danger'>Failed update Attribute value</span>";
             }
         } else {
-            $error['update_attribute'] = " <span class='label label-danger'>Attribute slug already present</span>";
+            $error['update_attribute'] = " <span class='label label-danger'>Slug already present</span>";
         }
     }
 }
 
 $data = array();
-$sql_query = "SELECT * FROM attributes WHERE id =" . $ID;
+$sql_query = "SELECT * FROM attribute_values WHERE id =" . $ID;
 $db->sql($sql_query);
 $res = $db->getResult();
 if (isset($_POST['btnCancel'])) { ?>
     <script>
-        window.location.href = "attributes.php";
+        window.location.href = "attribute-values.php";
     </script>
 <?php } ?>
 <section class="content-header">
     <h1>
-        Edit Attribute <small><a href='attributes.php'> <i class='fa fa-angle-double-left'></i>&nbsp;&nbsp;&nbsp;Back to Attributes</a></small></h1>
+        Edit Attribute Value<small><a href='attribute-values.php'> <i class='fa fa-angle-double-left'></i>&nbsp;&nbsp;&nbsp;Back to Attribute Values</a></small></h1>
     <small><?php echo isset($error['update_attribute']) ? $error['update_attribute'] : ''; ?></small>
     <ol class="breadcrumb">
         <li><a href="home.php"><i class="fa fa-home"></i> Home</a></li>
@@ -71,18 +75,34 @@ if (isset($_POST['btnCancel'])) { ?>
             <!-- general form elements -->
             <div class="box box-primary">
                 <div class="box-header with-border">
-                    <h3 class="box-title">Edit Attribute</h3>
+                    <h3 class="box-title">Edit Attribute Value</h3>
                 </div><!-- /.box-header -->
                 <!-- form start -->
                 <form method="post" enctype="multipart/form-data" id="edit_subcategory_form">
                     <div class="box-body">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1"> Attribute </label><?php echo isset($error['attribute_id']) ? $error['attribute_id'] : ''; ?>
+                            <?php
+                            $db->select("attributes", 'id,name');
+                            $attr = $db->getResult();
+                            ?>
+                            <select class="form-control" id="attribute_id" name="attribute_id" >
+                                <?php foreach ($attr as $attributes) {
+                                    echo "<option value=" . $attributes['id'];
+                                    if ($attributes['id'] == $res[0]['attribute_id']) {
+                                        echo " selected";
+                                    }
+                                    echo ">" . $attributes['name'] . "</option>";
+                                } ?>
+                            </select>
+                        </div>
                         <div class="form-group">
                             <label for="exampleInputName">Name</label>
                             <div class="msg"><?php echo isset($error['name']) ? $error['name'] : ''; ?></div>
                             <input type="text" class="form-control" name="name" value="<?php echo $res[0]['name']; ?>" >
                         </div>
                         <div class="form-group">
-                            <label for="exampleInputSlug">Slug</label>
+                            <label for="exampleInputCode">Slug</label>
                             <div class="msg"><?php echo isset($error['slug']) ? $error['slug'] : ''; ?></div>
                             <input type="text" class="form-control" name="slug" value="<?php echo $res[0]['slug']; ?>" >
                         </div>
@@ -105,7 +125,7 @@ if (isset($_POST['btnCancel'])) { ?>
     $('#edit_subcategory_form').validate({
         rules: {
             name: "required",
-            slug: "required",
+            code: "required",
         }
     });
     var data = $('.msg').html();
