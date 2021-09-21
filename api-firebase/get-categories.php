@@ -43,6 +43,16 @@ if (isset($_POST['accesskey'])) {
                 $childs = $db->getResult();
                 if (!empty($childs)) {
                     for ($i = 0; $i < count($childs); $i++) {
+                        $childs[$i]['attributes'] = [];
+                        if ($childs[$i]['attribute_ids'] != '') {
+                            $db->sql("SELECT * FROM attributes WHERE id in ('" . implode("','", explode(",", $childs[$i]['attribute_ids'])) . "') ORDER BY name ASC");
+                            $attributes = $db->getResult();
+                            if (!empty($attributes)) {
+                                for ($j = 0; $j < count($attributes); $j++) {
+                                    $childs[$i]['attributes'][$attributes[$j]['slug']] = (array)$attributes[$j];
+                                }
+                            }
+                        }
                         $childs[$i]['image'] = (!empty($childs[$i]['image'])) ? DOMAIN_URL . '' . $childs[$i]['image'] : '';
                         $r['childs'][$childs[$i]['slug']] = (array)$childs[$i];
                     }

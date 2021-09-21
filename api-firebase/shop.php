@@ -71,19 +71,23 @@ if (isset($_POST['accesskey'])) {
             $where[] = "(" . implode(") or (", $categoryCondition) . ")";
         }
 
+        if (isset($_POST['attribute-value']) && trim($_POST['attribute-value']) != "") {
+            $where[] = " attribute_value_id in ('" . implode("','", explode(",", $_POST['attribute-value'])) . "')";
+        }
+
         if (count($where)) {
             $where = "(" . implode(") and (", $where) . ")";
         } else {
             $where = " 1";
         }
-        $sql = "SELECT count(id) as total, MIN((select MIN(if(discounted_price > 0, discounted_price, price)) from product_variant where product_variant.product_id = products.id)) as min_price, MAX((select MAX(if(discounted_price > 0, discounted_price, price)) from product_variant where product_variant.product_id = products.id)) as max_price FROM products WHERE $where ";
+        $sql = "SELECT count(p.id) as total, MIN((select MIN(if(discounted_price > 0, discounted_price, price)) from product_variant where product_variant.product_id = p.id)) as min_price, MAX((select MAX(if(discounted_price > 0, discounted_price, price)) from product_variant where product_variant.product_id = p.id)) as max_price FROM products p LEFT JOIN product_attributes attr ON attr.product_id=p.id WHERE $where ";
         $db->sql($sql);
         $totalResult = $db->getResult();
         $total = $totalResult[0]['total'];
         $min_price = $totalResult[0]['min_price'];
         $max_price = $totalResult[0]['max_price'];
 
-        $sql = "SELECT *,(SELECT " . $price . " FROM product_variant pv WHERE pv.product_id=p.id) as price, (select MIN(if(discounted_price > 0, discounted_price, price)) from product_variant where product_variant.product_id = p.id) as min_price, (select MAX(if(discounted_price > 0, discounted_price, price)) from product_variant where product_variant.product_id = p.id) as max_price FROM products p WHERE $where ";
+        $sql = "SELECT DISTINCT p.*,(SELECT " . $price . " FROM product_variant pv WHERE pv.product_id=p.id) as price, (select MIN(if(discounted_price > 0, discounted_price, price)) from product_variant where product_variant.product_id = p.id) as min_price, (select MAX(if(discounted_price > 0, discounted_price, price)) from product_variant where product_variant.product_id = p.id) as max_price FROM products p LEFT JOIN product_attributes attr ON attr.product_id=p.id WHERE $where ";
         if (isset($_POST['min_price']) && isset($_POST['max_price']) && intval($_POST['max_price'])) {
             $sql .= " Having min_price > " . intval(intval($_POST['min_price']) - 1) . " and max_price < " . intval(intval($_POST['max_price']) + 1);
         }
@@ -154,11 +158,20 @@ if (isset($_POST['accesskey'])) {
                 $tmp = [];
                 foreach ($categories as $r) {
                     $r['childs'] = [];
-
                     $db->sql("SELECT *, (select count(*) from products where products.subcategory_id = subcategory.id) as total FROM subcategory WHERE category_id = '" . $r['id'] . "' ORDER BY name ASC");
                     $childs = $db->getResult();
                     if (!empty($childs)) {
                         for ($i = 0; $i < count($childs); $i++) {
+                            $childs[$i]['attributes'] = [];
+                            if ($childs[$i]['attribute_ids'] != '') {
+                                $db->sql("SELECT * FROM attributes WHERE id in ('" . implode("','", explode(",", $childs[$i]['attribute_ids'])) . "') ORDER BY name ASC");
+                                $attributes = $db->getResult();
+                                if (!empty($attributes)) {
+                                    for ($j = 0; $j < count($attributes); $j++) {
+                                        $childs[$i]['attributes'][$attributes[$j]['slug']] = (array)$attributes[$j];
+                                    }
+                                }
+                            }
                             $childs[$i]['image'] = (!empty($childs[$i]['image'])) ? DOMAIN_URL . '' . $childs[$i]['image'] : '';
                             $r['childs'][$childs[$i]['slug']] = (array)$childs[$i];
                         }
