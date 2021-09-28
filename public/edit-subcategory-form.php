@@ -191,7 +191,7 @@ if (isset($_POST['btnCancel'])) { ?>
 							<p class="help-block"><img src="<?php echo $res[0]['image']; ?>" width="280" height="190" /></p>
 						</div>
                         <div class="form-group">
-                            <label for="exampleInputEmail1">Main Category</label>
+                            <label for="exampleInputEmail1">Attributes</label>
                             <select class="form-control select2" data-toggle="select2"
                                     id="attribute_ids" name="attribute_ids[]" required multiple>
                                 <?php

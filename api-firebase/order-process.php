@@ -134,7 +134,7 @@ if (isset($_POST['place_order']) && isset($_POST['user_id']) && !empty($_POST['p
     );
     $walletvalue = ($wallet_used) ? $wallet_balance : 0;
     $order_status = $db->escapeString(json_encode($status));
-    $sql = "INSERT INTO `orders`(`user_id`,`otp`,  `mobile`,`order_note`, `total`, `delivery_charge`, `tax_amount`, `tax_percentage`, `wallet_balance`, `discount`, `promo_code`, `promo_discount`, `final_total`, `payment_method`, `address_id`, `address`, `latitude`, `longitude`, `delivery_time`, `status`, `active_status`,`order_from`) VALUES ('$user_id','$otp_number','$mobile','$order_note','$total','$delivery_charge','$tax_amount','$tax_percentage','$walletvalue','$discount','$promo_code','$promo_discount','$final_total','$payment_method','$address_id',$address','$latitude','$longitude','$delivery_time','$order_status','$active_status','$order_from')";
+    $sql = "INSERT INTO `orders`(`user_id`,`otp`,  `mobile`,`order_note`, `total`, `delivery_charge`, `tax_amount`, `tax_percentage`, `wallet_balance`, `discount`, `promo_code`, `promo_discount`, `final_total`, `payment_method`, `address_id`, `address`, `latitude`, `longitude`, `delivery_time`, `status`, `active_status`,`order_from`) VALUES ('$user_id','$otp_number','$mobile','$order_note','$total','$delivery_charge','$tax_amount','$tax_percentage','$walletvalue','$discount','$promo_code','$promo_discount','$final_total','$payment_method','$address_id','$address','$latitude','$longitude','$delivery_time','$order_status','$active_status','$order_from')";
     $db->sql($sql);
     $sql = "SELECT id FROM orders where user_id=$user_id and active_status = '$active_status' order by id desc limit 1";
     $db->sql($sql);

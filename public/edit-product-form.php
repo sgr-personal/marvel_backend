@@ -64,7 +64,7 @@ if (isset($_POST['btnEdit'])) {
         $description = $db->escapeString($fn->xss_clean($_POST['description']));
         $pr_status = $db->escapeString($fn->xss_clean($_POST['pr_status']));
         $manufacturer = (isset($_POST['manufacturer']) && $_POST['manufacturer'] != '') ? $db->escapeString($fn->xss_clean($_POST['manufacturer'])) : '';
-        $made_in = (isset($_POST['made_in']) && $_POST['made_in'] != '') ? $db->escapeString($fn->xss_clean($_POST['made_in'])) : '';
+        $made_in = (isset($_POST['made_in']) && $_POST['made_in'] != '') ? $db->escapeString($fn->xss_clean($_POST['made_in'])) : 0;
         $commission = (isset($_POST['commission']) && $_POST['commission'] != '') ? $db->escapeString($fn->xss_clean($_POST['commission'])) : '';
         $indicator = (isset($_POST['indicator']) && $_POST['indicator'] != '') ? $db->escapeString($fn->xss_clean($_POST['indicator'])) : '0';
         $return_status = (isset($_POST['return_status']) && $_POST['return_status'] != '') ? $db->escapeString($fn->xss_clean($_POST['return_status'])) : '0';
@@ -143,6 +143,7 @@ if (isset($_POST['btnEdit'])) {
                 $db->sql($sql);
             }
         }
+
         if (!empty($name) && !empty($category_id) && !empty($serve_for) && !empty($description) && empty($error['cancelable']) && empty($error)) {
             if (strpos($name, "'") !== false) {
                 $name = str_replace("'", "''", "$name");
@@ -161,14 +162,12 @@ if (isset($_POST['btnEdit'])) {
                 $upload = move_uploaded_file($_FILES['image']['tmp_name'], 'upload/images/' . $image);
 
                 $upload_image = 'upload/images/' . $image;
-                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' , subcategory_id = '$subcategory_id', profession_id = '$profession_id', image = '$upload_image', description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status',`status` = $pr_status,`commission` = $commission WHERE id = $ID";
+                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' , subcategory_id = '$subcategory_id', profession_id = '$profession_id', image = '$upload_image', description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status',`status` = $pr_status,`commission` = " . floatval($commission) . " WHERE id = $ID";
                 $db->sql($sql_query);
             } else {
-                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' ,category_id = '$category_id' ,subcategory_id = '$subcategory_id' , profession_id = '$profession_id', description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status' ,`status` = $pr_status,`commission` = $commission WHERE id = $ID";
+                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' ,category_id = '$category_id' ,subcategory_id = '$subcategory_id' , profession_id = '$profession_id', description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status' ,`status` = $pr_status,`commission` = " . floatval($commission) . " WHERE id = $ID";
                 $db->sql($sql_query);
             }
-
-            // echo $sql_query;
             $res = $db->getResult();
             $product_variant_id = $db->escapeString($fn->xss_clean($_POST['product_variant_id']));
             if (isset($_POST['loose_measurement']) && isset($_POST['packate_measurement']) && $_POST['loose_measurement'] != 0 && $_POST['packate_measurement'] != 0 && $_POST['packate_measurement'] < $_POST['loose_measurement']) {
@@ -178,21 +177,21 @@ if (isset($_POST['btnEdit'])) {
             }
             for ($i = 0; $i < $count; $i++) {
 //                if ($_POST['type'] == "packet") {
-                    $stock = $db->escapeString($fn->xss_clean($_POST['packate_stock'][$i]));
-                    $serve_for = ($stock == 0 || $stock <= 0) ? 'Sold Out' : $db->escapeString($fn->xss_clean($_POST['packate_serve_for'][$i]));
-                    $data = array(
-                        'type' => "packet",
-                        'measurement' => $db->escapeString($fn->xss_clean($_POST['packate_measurement'][$i])),
-                        'measurement_unit_id' => $db->escapeString($fn->xss_clean($_POST['packate_measurement_unit_id'][$i])),
-                        'price' => $db->escapeString($fn->xss_clean($_POST['packate_price'][$i])),
-                        'discounted_price' => $db->escapeString($fn->xss_clean($_POST['packate_discounted_price'][$i])),
-                        'stock' => $stock,
-                        'stock_unit_id' => $db->escapeString($fn->xss_clean($_POST['packate_stock_unit_id'][$i])),
-                        'serve_for' => $serve_for,
-                    );
+                $stock = $db->escapeString($fn->xss_clean($_POST['packate_stock'][$i]));
+                $serve_for = ($stock == 0 || $stock <= 0) ? 'Sold Out' : $db->escapeString($fn->xss_clean($_POST['packate_serve_for'][$i]));
+                $data = array(
+                    'type' => "packet",
+                    'measurement' => $db->escapeString($fn->xss_clean($_POST['packate_measurement'][$i])),
+                    'measurement_unit_id' => $db->escapeString($fn->xss_clean($_POST['packate_measurement_unit_id'][$i])),
+                    'price' => $db->escapeString($fn->xss_clean($_POST['packate_price'][$i])),
+                    'discounted_price' => $db->escapeString($fn->xss_clean($_POST['packate_discounted_price'][$i])),
+                    'stock' => $stock,
+                    'stock_unit_id' => $db->escapeString($fn->xss_clean($_POST['packate_stock_unit_id'][$i])),
+                    'serve_for' => $serve_for,
+                );
 
-                    $db->update('product_variant', $data, 'id=' . $fn->xss_clean($_POST['product_variant_id'][$i]));
-                    $res = $db->getResult();
+                $db->update('product_variant', $data, 'id=' . $fn->xss_clean($_POST['product_variant_id'][$i]));
+                $res = $db->getResult();
 //                }
                 /*else if ($_POST['type'] == "loose") {
                     $stock = $db->escapeString($fn->xss_clean($_POST['loose_stock']));
@@ -211,11 +210,9 @@ if (isset($_POST['btnEdit'])) {
                     $res = $db->getResult();
                 }*/
             }
-            if (
-                isset($_POST['insert_packate_measurement']) && isset($_POST['insert_packate_measurement_unit_id'])
+            if (isset($_POST['insert_packate_measurement']) && isset($_POST['insert_packate_measurement_unit_id'])
                 && isset($_POST['insert_packate_price']) && isset($_POST['insert_packate_discounted_price'])
-                && isset($_POST['insert_packate_stock']) && isset($_POST['insert_packate_stock_unit_id'])
-            ) {
+                && isset($_POST['insert_packate_stock']) && isset($_POST['insert_packate_stock_unit_id'])) {
                 $insert_packate_measurement = $db->escapeString($fn->xss_clean($_POST['insert_packate_measurement']));
                 for ($i = 0; $i < count($insert_packate_measurement); $i++) {
                     $stock = $db->escapeString($fn->xss_clean($_POST['insert_packate_stock'][$i]));
@@ -236,10 +233,8 @@ if (isset($_POST['btnEdit'])) {
                 }
             }
 
-            if (
-                isset($_POST['insert_loose_measurement']) && isset($_POST['insert_loose_measurement_unit_id'])
-                && isset($_POST['insert_loose_price']) && isset($_POST['insert_loose_discounted_price'])
-            ) {
+            if (isset($_POST['insert_loose_measurement']) && isset($_POST['insert_loose_measurement_unit_id'])
+                && isset($_POST['insert_loose_price']) && isset($_POST['insert_loose_discounted_price'])) {
                 $insert_loose_measurement = $db->escapeString($fn->xss_clean($_POST['insert_loose_measurement']));
                 for ($i = 0; $i < count($insert_loose_measurement); $i++) {
                     $data = array(
@@ -259,6 +254,22 @@ if (isset($_POST['btnEdit'])) {
             }
             $error['update_data'] = "<span class='label label-success'>Product updated Successfully</span>";
         }
+
+        /*attributes delete/insert start*/
+        $db->delete('product_attributes', 'product_id=' . $ID);
+        $attributes = $_POST['attributes'] ?? [];
+        if (!empty($attributes)) {
+            foreach ($attributes as $attr_id => $attr_val) {
+                $data = array(
+                    "product_id" => $db->escapeString($ID),
+                    "attribute_id" => $db->escapeString($attr_id),
+                    "attribute_value_id" => $db->escapeString($attr_val)
+                );
+                $db->insert('product_attributes', $data);
+                $res = $db->getResult();
+            }
+        }
+        /*attributes delete/insert end*/
     } else {
         $error['check_permission'] = " <section class='content-header'><span class='alert alert-danger'>You have no permission to update product</span></section>";
     }
@@ -329,12 +340,12 @@ function isJSON($string)
                                 </select><br>
                             </div>
                         </div>
-                        <!--<label for="type">Type</label><?php /*echo isset($error['type']) ? $error['type'] : ''; */?>
+                        <!--<label for="type">Type</label><?php /*echo isset($error['type']) ? $error['type'] : ''; */ ?>
                         <div class="form-group">
                             <label class="radio-inline"><input type="radio" name="type" id="packate"
-                                                               value="packet" <?/*= ($res[0]['type'] == "packet") ? "checked" : ""; */?>>Packet</label>
+                                                               value="packet" <? /*= ($res[0]['type'] == "packet") ? "checked" : ""; */ ?>>Packet</label>
                             <label class="radio-inline"><input type="radio" name="type" id="loose"
-                                                               value="loose" <?/*= ($res[0]['type'] == "loose") ? "checked" : ""; */?>>Loose</label>
+                                                               value="loose" <? /*= ($res[0]['type'] == "loose") ? "checked" : ""; */ ?>>Loose</label>
                         </div>-->
                         <hr>
                         <div id="variations">
@@ -752,8 +763,52 @@ function isJSON($string)
                                             <?php } ?>
                                         </select>
                                     </div>
+                                    <div class="form-group" id="attributes">
+                                        <?php if (!empty($res) && $res[0]['subcategory_id'] != '') {
+                                            $sql = "SELECT GROUP_CONCAT(attribute_value_id) as attr_val FROM product_attributes WHERE product_id=" . $res[0]['id'] . " GROUP BY product_id";
+                                            $db->sql($sql);
+                                            $product_attrs = $db->getResult();
+                                            $attr_val = array();
+                                            if (!empty($product_attrs) && $product_attrs[0]['attr_val'] != '') {
+                                                $attr_val = explode(',', $product_attrs[0]['attr_val']);
+                                            }
+                                            $sql = "SELECT * FROM subcategory WHERE id=" . $res[0]['subcategory_id'];
+                                            $db->sql($sql);
+                                            $subcategory = $db->getResult();
+                                            if (!empty($subcategory) && $subcategory[0]['attribute_ids'] != '') {
+                                                $attribute_ids = explode(',', $subcategory[0]['attribute_ids']);
+                                                foreach ($attribute_ids as $attr_id) {
+                                                    $sql = "SELECT * FROM attribute_values WHERE attribute_id=" . $attr_id;
+                                                    $db->sql($sql);
+                                                    $attr_values = $db->getResult();
+                                                    if (!empty($attr_values)) {
+                                                        $sql = "SELECT * FROM attributes WHERE id=" . $attr_id;
+                                                        $db->sql($sql);
+                                                        $attribute = $db->getResult();
+                                                        ?>
+                                                        <div class="form-group">
+                                                            <label for="<?= $attribute[0]['slug'] ?>"><?= $attribute[0]['name'] ?>
+                                                                :</label>
+                                                            <select name="attributes[<?= $attribute[0]['id'] ?>]"
+                                                                    id="<?= $attribute[0]['slug'] ?>"
+                                                                    class="form-control">
+                                                                <option value="">---Select <?= $attribute[0]['name'] ?>
+                                                                    ---
+                                                                </option>
+                                                                <?php foreach ($attr_values as $attr_value) { ?>
+                                                                    <option value="<?= $attr_value['id'] ?>" <?php if (in_array($attr_value['id'], $attr_val)) { ?> selected <?php } ?>><?= $attr_value['name'] ?></option>
+                                                                <?php } ?>
+                                                            </select>
+                                                        </div>
+                                                        <?php
+                                                    }
+                                                }
+                                            }
+                                        } ?>
+                                    </div>
                                     <div class="form-group">
-                                        <label for="profession_id">Profession :</label> <i class="text-danger asterik">*</i>
+                                        <label for="profession_id">Profession :</label> <i
+                                                class="text-danger asterik">*</i>
                                         <select class="form-control select2" data-toggle="select2"
                                                 name="profession_id[]" id="profession_id" required multiple>
                                             <?php foreach ($professions as $row):
@@ -762,24 +817,24 @@ function isJSON($string)
                                                     $selected = "selected";
                                                 endif;
                                                 ?>
-                                                    <option value="<?php echo $row['id']; ?>" <?= $selected; ?> >
-                                                        <?php echo $row['name']; ?>
-                                                    </option>
+                                                <option value="<?php echo $row['id']; ?>" <?= $selected; ?> >
+                                                    <?php echo $row['name']; ?>
+                                                </option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
-                                        <!--
+                                    <!--
                                     <div class="form-group">
                                         <label for="">Product Type :</label>
                                         <select name="indicator" id="indicator" class="form-control">
                                             <option value="">--Select Type--</option>
                                             <option value="1" <?php /*if ($res[0]['indicator'] == 1) {
                                                 echo 'selected';
-                                            } */?>>Veg
+                                            } */ ?>>Veg
                                             </option>
                                             <option value="2" <?php /*if ($res[0]['indicator'] == 2) {
                                                 echo 'selected';
-                                            } */?>>Non Veg
+                                            } */ ?>>Non Veg
                                             </option>
                                         </select>
                                     </div>-->
@@ -795,7 +850,8 @@ function isJSON($string)
                                     </div>
                                     <div class="form-group">
                                         <label for="">Agent Commission :</label>
-                                        <input type="text" name="commission" value="<?= $res[0]['commission'] ?>" class="form-control">
+                                        <input type="text" name="commission" value="<?= $res[0]['commission'] ?>"
+                                               class="form-control">
                                     </div>
                                     <div class="row">
                                         <div class="col-md-3">
@@ -1042,7 +1098,7 @@ function isJSON($string)
     });
 </script>
 <script>
-    $(document).on('click', '.remove_variation', function() {
+    $(document).on('click', '.remove_variation', function () {
         if ($(this).data('id') == 'data_delete') {
             if (confirm('Are you sure? Want to delete this row')) {
                 var id = $(this).closest('div.row').find("input[id='product_variant_id']").val();
@@ -1067,6 +1123,16 @@ function isJSON($string)
             data: 'category_id=' + $('#category_id').val() + '&find_subcategory=1',
             success: function (data) {
                 $('#subcategory_id').html("<option value=''>---Select Subcategory---</option>" + data);
+            }
+        });
+    });
+    $(document).on('change', '#subcategory_id', function () {
+        $.ajax({
+            url: 'public/db-operation.php',
+            method: 'POST',
+            data: 'subcategory_id=' + $('#subcategory_id').val() + '&find_attributes=1',
+            success: function (data) {
+                $('#attributes').html(data);
             }
         });
     });

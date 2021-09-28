@@ -101,6 +101,37 @@ if (isset($_POST['find_subcategory'])) {
     }
 }
 
+if (isset($_POST['find_attributes'])) {
+    $result = "<p>--No Attributes are added--</p>";
+    $subcategory_id = $db->escapeString($fn->xss_clean($_POST['subcategory_id']));
+    $sql = "SELECT * FROM subcategory WHERE id=" . $subcategory_id;
+    $db->sql($sql);
+    $res = $db->getResult();
+    if (!empty($res) && $res[0]['attribute_ids'] != '') {
+        $attribute_ids = explode(',', $res[0]['attribute_ids']);
+        $result = '';
+        foreach ($attribute_ids as $attr_id) {
+            $sql = "SELECT * FROM attribute_values WHERE attribute_id=" . $attr_id;
+            $db->sql($sql);
+            $attr_values = $db->getResult();
+            if (!empty($attr_values)) {
+                $sql = "SELECT * FROM attributes WHERE id=" . $attr_id;
+                $db->sql($sql);
+                $attribute = $db->getResult();
+                $result .= '<div class="form-group">';
+                $result .= '<label for="' . $attribute[0]['slug'] . '">' . $attribute[0]['name'] . ' :</label>';
+                $result .= '<select name="attributes[' . $attribute[0]['id'] . ']" id="' . $attribute[0]['slug'] . '" class="form-control">';
+                $result .= '<option value="">---Select ' . $attribute[0]['name'] . '---</option>';
+                foreach ($attr_values as $attr_value) {
+                    $result .= '<option value="' . $attr_value['id'] . '">' . $attr_value['name'] . '</option>';
+                }
+                $result .= '</select></div>';
+            }
+        }
+    }
+    echo $result;
+}
+
 if (isset($_POST['delete_variant'])) {
     $id = $db->escapeString($fn->xss_clean($_POST['id']));
     $sql = "DELETE FROM product_variant WHERE id=" . $id;
@@ -429,15 +460,15 @@ if (isset($_POST['front_end_settings']) && $_POST['front_end_settings'] == 1) {
     $favicon_old = "";
     $screenshots_old = "";
     $google_play_old ="";
-    
+
     $sql = "select * from settings where variable = 'footer_social_media'";
     $db->sql($sql);
     $res = $db->getResult();
-    $res_data = (!empty($res)) ? json_decode($res[0]['value'],true): array(); 
-    
-    
-    
-    
+    $res_data = (!empty($res)) ? json_decode($res[0]['value'],true): array();
+
+
+
+
     //if(empty($res)){
         $settings_value = json_encode($fn->xss_clean_array($_POST));
         $sql = "INSERT INTO settings (`variable`,`value`) VALUES ('footer_social_media','$settings_value ')";
@@ -455,7 +486,7 @@ if (isset($_POST['front_end_settings']) && $_POST['front_end_settings'] == 1) {
             //echo "<p class='alert alert-danger'>Something went wrong please try again!</p>";
         //}
     //}
-    
+
 }*/
 
 

@@ -158,7 +158,7 @@ if (isset($_POST['btnCancel'])) {
 							<input type="file" name="category_image" id="category_image" required />
 						</div>
                         <div class="form-group">
-                            <label for="exampleInputEmail1">Main Category</label>
+                            <label for="exampleInputEmail1">Attributes</label>
                             <select class="form-control select2" data-toggle="select2"
                                     id="attribute_ids" name="attribute_ids[]" required multiple>
                                 <option value="">--Select Attributes--</option>
