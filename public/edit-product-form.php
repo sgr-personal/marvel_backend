@@ -61,6 +61,7 @@ if (isset($_POST['btnEdit'])) {
         $subcategory_id = (isset($_POST['subcategory_id']) && $_POST['subcategory_id'] != '') ? $db->escapeString($fn->xss_clean($_POST['subcategory_id'])) : 0;
         $category_id = $db->escapeString($fn->xss_clean($_POST['category_id']));
         $serve_for = $db->escapeString($fn->xss_clean($_POST['serve_for']));
+        $short_description = $db->escapeString($fn->xss_clean($_POST['short_description']));
         $description = $db->escapeString($fn->xss_clean($_POST['description']));
         $pr_status = $db->escapeString($fn->xss_clean($_POST['pr_status']));
         $manufacturer = (isset($_POST['manufacturer']) && $_POST['manufacturer'] != '') ? $db->escapeString($fn->xss_clean($_POST['manufacturer'])) : '';
@@ -91,6 +92,10 @@ if (isset($_POST['btnEdit'])) {
         }
         if (empty($serve_for)) {
             $error['serve_for'] = " <span class='label label-danger'>Not choosen</span>";
+        }
+
+        if (empty($short_description)) {
+            $error['short_description'] = " <span class='label label-danger'>Required!</span>";
         }
 
         if (empty($description)) {
@@ -144,7 +149,7 @@ if (isset($_POST['btnEdit'])) {
             }
         }
 
-        if (!empty($name) && !empty($category_id) && !empty($serve_for) && !empty($description) && empty($error['cancelable']) && empty($error)) {
+        if (!empty($name) && !empty($category_id) && !empty($serve_for) && !empty($short_description) && !empty($description) && empty($error['cancelable']) && empty($error)) {
             if (strpos($name, "'") !== false) {
                 $name = str_replace("'", "''", "$name");
                 if (strpos($description, "'") !== false)
@@ -165,7 +170,7 @@ if (isset($_POST['btnEdit'])) {
                 $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' , subcategory_id = '$subcategory_id', profession_id = '$profession_id', image = '$upload_image', description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status',`status` = $pr_status,`commission` = " . floatval($commission) . " WHERE id = $ID";
                 $db->sql($sql_query);
             } else {
-                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' ,category_id = '$category_id' ,subcategory_id = '$subcategory_id' , profession_id = '$profession_id', description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status' ,`status` = $pr_status,`commission` = " . floatval($commission) . " WHERE id = $ID";
+                $sql_query = "UPDATE products SET name = '$name' ,tax_id = '$tax_id' ,slug = '$slug' ,category_id = '$category_id' ,subcategory_id = '$subcategory_id' , profession_id = '$profession_id', short_description = '$short_description', description = '$description', indicator = '$indicator', manufacturer = '$manufacturer', made_in = '$made_in', return_status = '$return_status', cancelable_status = '$cancelable_status', till_status = '$till_status' ,`status` = $pr_status,`commission` = " . floatval($commission) . " WHERE id = $ID";
                 $db->sql($sql_query);
             }
             $res = $db->getResult();
@@ -564,7 +569,7 @@ function isJSON($string)
                                                 <label for="exampleInputEmail1">Varirant</label> <i
                                                         class="text-danger asterik">*</i>
                                                 <input type="number" step="any" min="0" class="form-control"
-                                                       name="loose_measurement[]" required=""
+                                                       name="loose_measurement[]"
                                                        value='<?= $row['measurement']; ?>'>
                                             </div>
                                         </div>
@@ -655,7 +660,7 @@ function isJSON($string)
                                                 <label for="exampleInputEmail1">Variant</label> <i
                                                         class="text-danger asterik">*</i>
                                                 <input type="text" class="form-control"
-                                                       name="loose_measurement[]" required="">
+                                                       name="loose_measurement[]">
                                             </div>
                                         </div>
                                         <div class="col-md-2">
@@ -675,7 +680,7 @@ function isJSON($string)
                                                 <label for="price">Price (INR):</label> <i
                                                         class="text-danger asterik">*</i>
                                                 <input type="number" step="any" min="0" class="form-control"
-                                                       name="loose_price[]" id="loose_price" required="">
+                                                       name="loose_price[]" id="loose_price">
                                             </div>
                                         </div>
                                         <div class="col-md-2">
@@ -698,8 +703,7 @@ function isJSON($string)
                                 <div class="form-group" id="loose_stock_div" style="display:none;">
                                     <label for="quantity">Stock :</label> <i
                                             class="text-danger asterik">*</i> <?php echo isset($error['quantity']) ? $error['quantity'] : ''; ?>
-                                    <input type="number" step="any" min="0" class="form-control" name="loose_stock"
-                                           required>
+                                    <input type="number" step="any" min="0" class="form-control" name="loose_stock">
 
                                     <label for="stock_unit">Unit
                                         :</label><?php echo isset($error['stock_unit']) ? $error['stock_unit'] : ''; ?>
@@ -845,7 +849,7 @@ function isJSON($string)
                                     </div>
                                     <div class="form-group">
                                         <label for="">Made In :</label>
-                                        <input type="number" name="made_in" value="<?= $res[0]['made_in'] ?>"
+                                        <input type="text" name="made_in" value="<?= $res[0]['made_in'] ?>"
                                                class="form-control">
                                     </div>
                                     <div class="form-group">
@@ -921,11 +925,20 @@ function isJSON($string)
                                         } ?>
                                     </div>
                                     <div class="form-group">
-                                        <label for="exampleInputEmail1">Description :</label> <i
+                                        <label for="short_description">Short Description :</label> <i
+                                                class="text-danger asterik">*</i> <?php echo isset($error['short_description']) ? $error['short_description'] : ''; ?>
+                                        <textarea name="short_description" id="short_description" class="form-control"
+                                                  rows="16"><?php echo $data['short_description']; ?></textarea>
+                                        <script type="text/javascript" src="css/js/ckeditor/ckeditor.js"></script>
+                                        <script type="text/javascript">
+                                            CKEDITOR.replace('short_description');
+                                        </script>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="description">Description :</label> <i
                                                 class="text-danger asterik">*</i> <?php echo isset($error['description']) ? $error['description'] : ''; ?>
                                         <textarea name="description" id="description" class="form-control"
                                                   rows="16"><?php echo $data['description']; ?></textarea>
-                                        <script type="text/javascript" src="css/js/ckeditor/ckeditor.js"></script>
                                         <script type="text/javascript">
                                             CKEDITOR.replace('description');
                                         </script>
@@ -1022,6 +1035,13 @@ function isJSON($string)
             discounted_price: {
                 lessThanEqual: "#price"
             },
+            short_description: {
+                required: function (textarea) {
+                    CKEDITOR.instances[textarea.id].updateElement();
+                    var editorcontent = textarea.value.replace(/<[^>]*>/gi, '');
+                    return editorcontent.length === 0;
+                }
+            }
             description: {
                 required: function (textarea) {
                     CKEDITOR.instances[textarea.id].updateElement();
@@ -1033,12 +1053,9 @@ function isJSON($string)
     });
 </script>
 <script>
-
-</script>
-<script>
     $('#add_loose_variation').on('click', function () {
         html = '<div class="row"><div class="col-md-4"><div class="form-group loose_div">' +
-            '<label for="exampleInputEmail1">Variant</label> <i class="text-danger asterik">*</i> <input type="text" class="form-control" name="insert_loose_measurement[]" required="">' +
+            '<label for="exampleInputEmail1">Variant</label> <i class="text-danger asterik">*</i> <input type="text" class="form-control" name="insert_loose_measurement[]">' +
             '</div></div>' +
             '<div class="col-md-2"><div class="form-group loose_div">' +
             '<label for="unit">Unit:</label>' +
